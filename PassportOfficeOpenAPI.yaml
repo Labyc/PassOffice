@@ -1,0 +1,551 @@
+openapi: 3.0.1
+info:
+  title: Passport office API
+  description: This is a Passport office API.
+  version: 1.0.0
+
+servers:
+  - url: 'http://192.168.37.200:8090'
+    description: base server
+tags:
+  - name: Passport
+    description: get/add/switch/inactivate passport
+  - name: Search
+    description: Search for passport or Person
+  - name: Person
+    description: get/add/edit/delete Person info
+paths:
+  /healthCheck:
+    get:
+      summary: Check API server is OK
+      operationId: healthCheck
+      security: [] #No security for healthCheck
+      responses:
+        '200':
+          description: OK
+        '500':
+          description: internal service error
+        '400':
+          description: not reachable
+
+  /passports:
+    get:
+      security:
+        - BearerAuth: [admin]
+      deprecated: true
+      tags:
+        - Passport
+      summary: Returns a list of passports.
+      responses:
+        '200':
+          $ref: '#/components/responses/ReturnPassports'
+        '402':
+          description: No Content
+        '401':
+          description: Authorisation required
+    post:
+      tags:
+        - Passport
+      summary: Post passports in bulk mode.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                anyOf:
+                  - $ref: '#/components/schemas/RFPassport'
+                  - $ref: '#/components/schemas/ForeignRFPassport'
+                  - $ref: '#/components/schemas/NonRFPassport'
+      responses:
+        '200':
+          description: OK
+        '409':
+          description: Data conflict
+        '401':
+          description: Authorisation required
+        '452': #Custom error
+          description: Bad Data
+  /search/passports:
+    post:
+      tags:
+        - Search
+      summary: Get passports by person
+      operationId: getPassportByPerson
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Person'
+      responses:
+        '200':
+          $ref: '#/components/responses/ReturnPassports'
+        '404':
+          description: Not found
+        '401':
+          description: Authorisation required
+        '452': #Custom error
+          description: Bad Data
+    get:
+      tags:
+        - Search
+      summary: Get passports by given date range
+      operationId: getPassportsByGivenDateRange
+      parameters:
+        - name: startDate
+          in: query
+          required: true
+          example: 25.03.1999
+        - name: endDate
+          in: query
+          required: false
+          example: 25.03.1999
+          description: Will be set to today's date if not provided
+      responses:
+        '200':
+          $ref: '#/components/responses/ReturnPassports'
+        '404':
+          description: Not found
+        '401':
+          description: Authorisation required
+        '452': #Custom error
+          description: Incorrect Date
+
+  /passport?series={series}&number={number}:
+    parameters:
+      - name: series
+        in: query
+        description: Passport series
+        required: true
+        schema:
+          type: string
+          format: dddd
+          description: 4 digits
+          example: 1234
+      - name: number
+        in: path
+        description: Passport number
+        required: true
+        schema:
+          type: string
+          format: dddddd
+          description: 6 digits
+          example: 123456
+    get:
+      tags:
+        - Passport
+      summary: Returns one passport
+      operationId: getPassportBySeriesNumber
+      responses:
+        '200':
+          $ref: '#/components/responses/ReturnPassport'
+        '401':
+          description: Authorisation required
+        '404':
+          description: Not found
+    patch:
+      tags:
+        - Passport
+      summary: Edit passport
+      operationId: editPassport
+      requestBody:
+        $ref: '#/components/requestBodies/PostPassport'
+      responses:
+        '200':
+          description: OK, accepted
+        '409':
+          description: Data conflict
+        '401':
+          description: Authorisation required
+        '404':
+          description: Not found
+        '452': #Custom error
+          description: Bad Data
+    delete:
+      tags:
+        - Passport
+      summary: Mark passport as deleted by series and number
+      operationId: deletePassport
+      responses:
+        '200':
+          description: OK, accepted
+        '401':
+          description: Authorisation required
+        '404':
+          description: Not found
+  /passport:
+    post:
+      tags:
+        - Passport
+      summary: add one passport
+      operationId: postPassport
+      requestBody:
+        $ref: '#/components/requestBodies/PostPassport'
+      responses:
+        '200':
+          description: OK, accepted
+        '409':
+          description: Data conflict
+        '401':
+          description: Authorisation required
+        '452': #Custom error
+          description: Bad Data
+  /passport/swap:
+    post:
+      tags:
+        - Passport
+      summary: Add new passport to swap the old one
+      operationId: swapPassport
+      parameters:
+        - name: series
+          in: query
+          required: true
+          description: Old passport series
+          schema:
+            type: string
+            format: dddd
+            description: 4 digits
+        - name: number
+          in: query
+          required: true
+          description: Old passport number
+          schema:
+            type: string
+            format: dddddd
+            description: 6 digits
+      requestBody:
+        $ref: '#/components/requestBodies/PostPassport'
+      responses:
+        '200':
+          description: OK, accepted
+        '409':
+          description: Data conflict
+        '401':
+          description: Authorisation required
+        '404':
+          description: Old Passport not found
+        '452': #Custom error
+          description: Bad Data
+    get:
+      tags:
+        - Passport
+      summary: Get new passport instead of old one with the same data
+      operationId: automaticSwapPassport
+      parameters:
+        - name: series
+          in: query
+          required: true
+          description: Old passport series
+          schema:
+            type: string
+            format: dddd
+            description: 4 digits
+        - name: number
+          in: query
+          required: true
+          description: Old passport number
+          schema:
+            type: string
+            format: dddddd
+            description: 6 digits
+      responses:
+        '200':
+          $ref: '#/components/responses/ReturnPassport'
+        '401':
+          description: Authorisation required
+        '404':
+          description: Old Passport not found
+
+  /person:
+    post:
+      tags:
+        - Person
+      summary: add one person
+      operationId: postPerson
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Person'
+      responses:
+        '200':
+          description: OK, accepted
+        '409':
+          description: Data conflict
+        '401':
+          description: Authorisation required
+        '452': #Custom error
+          description: Bad Data
+    patch:
+      tags:
+        - Person
+      summary: edit one person
+      operationId: editPerson
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Person'
+      responses:
+        '200':
+          description: OK, accepted
+        '409':
+          description: Data conflict
+        '401':
+          description: Authorisation required
+        '452': #Custom error
+          description: Bad Data
+    get:
+      tags:
+        - Person
+      summary: get persons by full name
+      operationId: getPersonsByName
+      parameters:
+        - name: name
+          in: query
+          description: The name of the person
+          required: true
+          schema:
+            type: string
+        - name: surname
+          in: query
+          description: The surname of the person
+          required: true
+          schema:
+            type: string
+        - name: patronymic
+          in: query
+          description: The patronymic of the person
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK, accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '401':
+          description: Authorisation required
+        '404':
+          description: Not found
+    delete:
+      tags:
+        - Person
+      summary: Mark Person As deleted
+      operationId: deletePerson
+      parameters:
+        - name: name
+          in: query
+          description: The name of the person
+          required: true
+          schema:
+            type: string
+        - name: surname
+          in: query
+          description: The surname of the person
+          required: true
+          schema:
+            type: string
+        - name: patronymic
+          in: query
+          description: The patronymic of the person
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK, accepted
+        '401':
+          description: Authorisation required
+        '404':
+          description: Not found
+
+components:
+  schemas:
+    BasePassportModel:
+      type: object
+      description: Abstract passport model
+      properties:
+        passportType:
+          type: string
+          enum: [RFPassport, ForeignRFPassport, NonRFPassport]
+        person:
+          $ref: '#/components/schemas/Person'
+        number:
+          type: string
+          description: 6 digits for RF passport, required for all passport types
+        givenDate:
+          type: string
+          description: Date when the passport is given. Will be set to today's date if not provided
+        givenDepartment:
+          type: string
+          description: The department where the passport is given
+        otherPassports:
+          type: array
+          description: The other related passports list as array
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/RFPassport'
+              - $ref: '#/components/schemas/ForeignRFPassport'
+              - $ref: '#/components/schemas/NonRFPassport'
+      required:
+        - passportType
+        - number
+        - person
+        - givenDepartment
+
+    RFPassport:
+      allOf:
+        - $ref: '#/components/schemas/BasePassportModel'
+        - type: object
+          description: Passport data
+          properties:
+            series:
+              type: string
+              description: 4 digits for RF passport
+            givenDepartmentCode:
+              type: string
+              description: The number of the department code where the passport is given
+              example: 120-450
+            registrationData:
+              $ref: '#/components/schemas/RegistrationData'
+          required:
+            - series
+            - givenDepartmentCode
+
+    ForeignRFPassport:
+      allOf:
+        - $ref: '#/components/schemas/BasePassportModel'
+        - type: object
+          description: RF foreign passport
+          properties:
+            expirationDate:
+              type: string
+              description: Passport expirationDate
+              example: dd.mm.yyyy
+          required:
+            - expirationDate
+
+    NonRFPassport:
+      allOf:
+        - $ref: '#/components/schemas/BasePassportModel'
+        - type: object
+          description: Non RF Passport
+          properties:
+            country:
+              type: string
+              description: Country in which the passport is given
+          required:
+            - country
+
+    RegistrationData:
+      type: object
+      description: The information about person's place of registration
+      properties:
+        registrationAddress:
+          type: string
+          description: Address of registration
+        registrationDate:
+          type: string
+          description: Date of registration
+          format: dd.mm.yyyy
+        registrationDepartment:
+          type: string
+          description: Department of registration
+        previousRegistrations:
+          type: array
+          description: The list of previous registrations
+          items:
+            $ref: '#/components/schemas/RegistrationData'
+      required:
+        - registrationAddress
+        - registrationDate
+        - registrationDepartment
+
+    Person:
+      type: object
+      description: Person info
+      properties:
+        name:
+          type: string
+          description: Person's Name
+        surname:
+          type: string
+          description: Person's surname
+        patronymic:
+          type: string
+          description: Person's patronymic
+        placeOfBirth:
+          type: string
+          description: Person's place of birth
+        dateOfBirth:
+          type: string
+          description: Person's date of birth
+          example: dd.mm.yyyy
+      required:
+        - name
+        - surname
+        - placeOfBirth
+        - dateOfBirth
+
+  responses:
+    ReturnPassport:
+      description: OK, accepted
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: '#/components/schemas/RFPassport'
+              - $ref: '#/components/schemas/ForeignRFPassport'
+              - $ref: '#/components/schemas/NonRFPassport'
+            discriminator:
+              propertyName: passportType
+              #mapping:
+               # RFPassport: '#/components/schemas/RFPassport'
+               # ForeignRFPassport: '#/components/schemas/ForeignRFPassport'
+                #NonRFPassport: '#/components/schemas/NonRFPassport'
+    ReturnPassports:
+      description: OK, accepted
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              oneOf:
+                - $ref: '#/components/schemas/RFPassport'
+                - $ref: '#/components/schemas/ForeignRFPassport'
+                - $ref: '#/components/schemas/NonRFPassport'
+              discriminator:
+                propertyName: passportType
+
+  requestBodies:
+    PostPassport:
+      required: true
+      content:
+        application/json:
+          schema:
+            oneOf:
+                - $ref: '#/components/schemas/RFPassport'
+                - $ref: '#/components/schemas/ForeignRFPassport'
+                - $ref: '#/components/schemas/NonRFPassport'
+
+
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      flows:                  #???
+        authorizationCode:
+          tokenUrl: someUrl
+          scopes:
+            read: Grants read access
+            write: write access
+
+security:
+  - BearerAuth: [ ]
