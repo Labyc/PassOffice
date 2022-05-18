@@ -10,16 +10,21 @@ servers:
 tags:
   - name: Passport
     description: get/add/switch/inactivate passport
+  - name: Passports
+    description: Bulk add or get passports
   - name: Search
     description: Search for passport or Person
   - name: Person
     description: get/add/edit/delete Person info
+  - name: Healthcheck
+
 paths:
   /healthCheck:
     get:
+      tags:
+        - Healthcheck
       summary: Check API server is OK
       operationId: healthCheck
-      security: [] #No security for healthCheck
       responses:
         '200':
           description: OK
@@ -30,45 +35,47 @@ paths:
 
   /passports:
     get:
-      security:
-        - BearerAuth: [admin]
       deprecated: true
       tags:
-        - Passport
+        - Passports
       summary: Returns a list of passports.
       responses:
         '200':
-          $ref: '#/components/responses/ReturnPassports'
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PassportsList'
         '402':
           description: No Content
-        '401':
-          description: Authorisation required
+        '500':
+          description: internal service error
+
     post:
       tags:
-        - Passport
+        - Passports
       summary: Post passports in bulk mode.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: array
-              items:
-                anyOf:
-                  - $ref: '#/components/schemas/RFPassport'
-                  - $ref: '#/components/schemas/ForeignRFPassport'
-                  - $ref: '#/components/schemas/NonRFPassport'
+              $ref: '#/components/schemas/PassportsList'
       responses:
         '200':
-          description: OK
-        '409':
-          description: Data conflict
-        '401':
-          description: Authorisation required
-        '452': #Custom error
-          description: Bad Data
+          description: Entities Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PassportsList'
+        '400':
+          description: Bad Request - invalid syntax
+        '422':
+          $ref: '#/components/responses/InvalidData'
+
   /search/passports:
     post:
+      deprecated: true
       tags:
         - Search
       summary: Get passports by person
@@ -80,13 +87,41 @@ paths:
               $ref: '#/components/schemas/Person'
       responses:
         '200':
-          $ref: '#/components/responses/ReturnPassports'
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PassportsList'
         '404':
           description: Not found
-        '401':
-          description: Authorisation required
-        '452': #Custom error
-          description: Bad Data
+        '400':
+          description: Bad Request - invalid syntax
+        '422':
+          $ref: '#/components/responses/InvalidData'
+
+  /search/passports/byPersonId:
+    get:
+      tags:
+        - Search
+      summary: Get passports by person's ID
+      operationId: getPassportsByPersonID
+      parameters:
+        - name: personID
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PassportsList'
+        '404':
+          description: Not found
+
+  /search/passports/dateRange:
     get:
       tags:
         - Search
@@ -97,41 +132,122 @@ paths:
           in: query
           required: true
           example: 25.03.1999
+          schema:
+            type: string
+            format: date
         - name: endDate
           in: query
           required: false
           example: 25.03.1999
           description: Will be set to today's date if not provided
+          schema:
+            type: string
+            format: date
       responses:
         '200':
-          $ref: '#/components/responses/ReturnPassports'
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PassportsList'
         '404':
           description: Not found
-        '401':
-          description: Authorisation required
-        '452': #Custom error
-          description: Incorrect Date
 
-  /passport?series={series}&number={number}:
+  /newPassport:
+    post:
+      tags:
+        - Passport
+      summary: Add one new passport
+      operationId: postPassport
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Passport'
+      responses:
+        '200':
+          description: OK entity created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Passport'
+        '400':
+          description: Bad Request - invalid syntax
+        '422':
+          $ref: '#/components/responses/InvalidData'
+    patch:
+      tags:
+        - Passport
+      summary: Edit passport
+      operationId: editPassport
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/RFPassport'
+                - $ref: '#/components/schemas/ForeignRFPassport'
+                - $ref: '#/components/schemas/NonRFPassport'
+              discriminator:
+                propertyName: passportType
+      responses:
+        '200':
+          description: OK, entity updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Passport'
+        '404':
+          description: Not found
+        '400':
+          description: Bad Request - invalid syntax
+        '422':
+          $ref: '#/components/responses/InvalidData'
+
+    put:
+      tags:
+        - Passport
+      summary: Add new passport to swap the old one
+      operationId: swapPassport
+      parameters:
+        - name: passportID
+          in: query
+          required: true
+          description: Old passport ID
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Passport'
+      responses:
+        '200':
+          description: OK, accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Passport'
+        '404':
+          description: Old Passport not found
+        '400':
+          description: Bad Request - invalid syntax
+        '422':
+          $ref: '#/components/responses/InvalidData'
+
+
+  /passport:
     parameters:
-      - name: series
+      - name: passportID
         in: query
-        description: Passport series
+        description: Passport ID
         required: true
         schema:
           type: string
-          format: dddd
-          description: 4 digits
-          example: 1234
-      - name: number
-        in: path
-        description: Passport number
-        required: true
-        schema:
-          type: string
-          format: dddddd
-          description: 6 digits
-          example: 123456
+
     get:
       tags:
         - Passport
@@ -139,29 +255,13 @@ paths:
       operationId: getPassportBySeriesNumber
       responses:
         '200':
-          $ref: '#/components/responses/ReturnPassport'
-        '401':
-          description: Authorisation required
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Passport'
         '404':
           description: Not found
-    patch:
-      tags:
-        - Passport
-      summary: Edit passport
-      operationId: editPassport
-      requestBody:
-        $ref: '#/components/requestBodies/PostPassport'
-      responses:
-        '200':
-          description: OK, accepted
-        '409':
-          description: Data conflict
-        '401':
-          description: Authorisation required
-        '404':
-          description: Not found
-        '452': #Custom error
-          description: Bad Data
     delete:
       tags:
         - Passport
@@ -169,65 +269,18 @@ paths:
       operationId: deletePassport
       responses:
         '200':
-          description: OK, accepted
-        '401':
-          description: Authorisation required
+          description: OK, entity updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Passport'
         '404':
           description: Not found
-  /passport:
-    post:
-      tags:
-        - Passport
-      summary: add one passport
-      operationId: postPassport
-      requestBody:
-        $ref: '#/components/requestBodies/PostPassport'
-      responses:
-        '200':
-          description: OK, accepted
-        '409':
-          description: Data conflict
-        '401':
-          description: Authorisation required
-        '452': #Custom error
-          description: Bad Data
+
+
   /passport/swap:
-    post:
-      tags:
-        - Passport
-      summary: Add new passport to swap the old one
-      operationId: swapPassport
-      parameters:
-        - name: series
-          in: query
-          required: true
-          description: Old passport series
-          schema:
-            type: string
-            format: dddd
-            description: 4 digits
-        - name: number
-          in: query
-          required: true
-          description: Old passport number
-          schema:
-            type: string
-            format: dddddd
-            description: 6 digits
-      requestBody:
-        $ref: '#/components/requestBodies/PostPassport'
-      responses:
-        '200':
-          description: OK, accepted
-        '409':
-          description: Data conflict
-        '401':
-          description: Authorisation required
-        '404':
-          description: Old Passport not found
-        '452': #Custom error
-          description: Bad Data
     get:
+      deprecated: true
       tags:
         - Passport
       summary: Get new passport instead of old one with the same data
@@ -239,7 +292,8 @@ paths:
           description: Old passport series
           schema:
             type: string
-            format: dddd
+            example: 1234
+            pattern: '\d{4}'
             description: 4 digits
         - name: number
           in: query
@@ -247,13 +301,16 @@ paths:
           description: Old passport number
           schema:
             type: string
-            format: dddddd
+            example: 123456
+            pattern: '\d{6}'
             description: 6 digits
       responses:
         '200':
-          $ref: '#/components/responses/ReturnPassport'
-        '401':
-          description: Authorisation required
+          description: Ok, entity created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Passport'
         '404':
           description: Old Passport not found
 
@@ -268,16 +325,25 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Person'
+              allOf:
+                - $ref: '#/components/schemas/Person'
+                - type: object
+                  required:
+                    - name
+                    - surname
+                    - placeOfBirth
+                    - dateOfBirth
       responses:
         '200':
-          description: OK, accepted
-        '409':
-          description: Data conflict
-        '401':
-          description: Authorisation required
-        '452': #Custom error
-          description: Bad Data
+          description: OK, entity created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '400':
+          description: Bad Request - invalid syntax
+        '422':
+          $ref: '#/components/responses/InvalidData'
     patch:
       tags:
         - Person
@@ -291,13 +357,15 @@ paths:
               $ref: '#/components/schemas/Person'
       responses:
         '200':
-          description: OK, accepted
-        '409':
-          description: Data conflict
-        '401':
-          description: Authorisation required
-        '452': #Custom error
-          description: Bad Data
+          description: OK, entity updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '400':
+          description: Bad Request - invalid syntax
+        '422':
+          $ref: '#/components/responses/InvalidData'
     get:
       tags:
         - Person
@@ -324,13 +392,13 @@ paths:
             type: string
       responses:
         '200':
-          description: OK, accepted
+          description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Person'
-        '401':
-          description: Authorisation required
+                type: array
+                items:
+                  $ref: '#/components/schemas/Person'
         '404':
           description: Not found
     delete:
@@ -339,29 +407,19 @@ paths:
       summary: Mark Person As deleted
       operationId: deletePerson
       parameters:
-        - name: name
+        - name: ID
           in: query
-          description: The name of the person
+          description: The ID of the person
           required: true
-          schema:
-            type: string
-        - name: surname
-          in: query
-          description: The surname of the person
-          required: true
-          schema:
-            type: string
-        - name: patronymic
-          in: query
-          description: The patronymic of the person
-          required: false
           schema:
             type: string
       responses:
         '200':
-          description: OK, accepted
-        '401':
-          description: Authorisation required
+          description: OK, entity edited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
         '404':
           description: Not found
 
@@ -374,14 +432,19 @@ components:
         passportType:
           type: string
           enum: [RFPassport, ForeignRFPassport, NonRFPassport]
-        person:
-          $ref: '#/components/schemas/Person'
+        ID:
+          type: string
+          description: Internal passport ID
+        personID:
+          type: string
+          description: Person ID
         number:
           type: string
           description: 6 digits for RF passport, required for all passport types
         givenDate:
           type: string
           description: Date when the passport is given. Will be set to today's date if not provided
+          format: date
         givenDepartment:
           type: string
           description: The department where the passport is given
@@ -393,11 +456,12 @@ components:
               - $ref: '#/components/schemas/RFPassport'
               - $ref: '#/components/schemas/ForeignRFPassport'
               - $ref: '#/components/schemas/NonRFPassport'
+          uniqueItems: true
+        isActive:
+          type: boolean
+          description: Indicates if the passport is active
       required:
         - passportType
-        - number
-        - person
-        - givenDepartment
 
     RFPassport:
       allOf:
@@ -408,15 +472,18 @@ components:
             series:
               type: string
               description: 4 digits for RF passport
+              pattern: '\d{4}'
+            number:
+              type: string
+              description: 6 digits for RF passport
+              pattern: '\d{6}'
             givenDepartmentCode:
               type: string
               description: The number of the department code where the passport is given
               example: 120-450
+              pattern: '\d{3}-\d{3}'
             registrationData:
               $ref: '#/components/schemas/RegistrationData'
-          required:
-            - series
-            - givenDepartmentCode
 
     ForeignRFPassport:
       allOf:
@@ -427,9 +494,8 @@ components:
             expirationDate:
               type: string
               description: Passport expirationDate
-              example: dd.mm.yyyy
-          required:
-            - expirationDate
+              example: 13.12.1423
+              format: date
 
     NonRFPassport:
       allOf:
@@ -440,8 +506,83 @@ components:
             country:
               type: string
               description: Country in which the passport is given
-          required:
-            - country
+
+    PassportsList:
+      type: array
+      items:
+        oneOf:
+          - allOf:
+              - $ref: '#/components/schemas/RFPassport'
+              - type: object
+                required:
+                  - number
+                  - person
+                  - personID
+                  - givenDepartment
+                  - series
+                  - givenDepartmentCode
+          - allOf:
+              - $ref: '#/components/schemas/ForeignRFPassport'
+              - type: object
+                required:
+                  - number
+                  - person
+                  - personID
+                  - givenDepartment
+                  - expirationDate
+          - allOf:
+              - $ref: '#/components/schemas/NonRFPassport'
+              - type: object
+                required:
+                  - number
+                  - person
+                  - personID
+                  - givenDepartment
+                  - country
+        discriminator:
+          propertyName: passportType
+          mapping:
+            RFPassport: '#/components/schemas/RFPassport'
+            ForeignRFPassport: '#/components/schemas/ForeignRFPassport'
+            NonRFPassport: '#/components/schemas/NonRFPassport'
+      uniqueItems: true
+
+    Passport:
+      oneOf:
+        - allOf:
+            - $ref: '#/components/schemas/RFPassport'
+            - type: object
+              required:
+                - number
+                - person
+                - personID
+                - givenDepartment
+                - series
+                - givenDepartmentCode
+        - allOf:
+            - $ref: '#/components/schemas/ForeignRFPassport'
+            - type: object
+              required:
+                - number
+                - person
+                - personID
+                - givenDepartment
+                - expirationDate
+        - allOf:
+            - $ref: '#/components/schemas/NonRFPassport'
+            - type: object
+              required:
+                - number
+                - person
+                - personID
+                - givenDepartment
+                - country
+      discriminator:
+        propertyName: passportType
+        mapping:
+          RFPassport: '#/components/schemas/RFPassport'
+          ForeignRFPassport: '#/components/schemas/ForeignRFPassport'
+          NonRFPassport: '#/components/schemas/NonRFPassport'
 
     RegistrationData:
       type: object
@@ -453,7 +594,7 @@ components:
         registrationDate:
           type: string
           description: Date of registration
-          format: dd.mm.yyyy
+          format: date
         registrationDepartment:
           type: string
           description: Department of registration
@@ -471,6 +612,9 @@ components:
       type: object
       description: Person info
       properties:
+        ID:
+          type: string
+          description: Internal person ID
         name:
           type: string
           description: Person's Name
@@ -486,66 +630,74 @@ components:
         dateOfBirth:
           type: string
           description: Person's date of birth
-          example: dd.mm.yyyy
-      required:
-        - name
-        - surname
-        - placeOfBirth
-        - dateOfBirth
+          example: 14.03.1423
+          format: date
+        dateOfDeath:
+          type: string
+          description: Person's date of death
+          example: 14.03.1423
+          format: date
 
   responses:
-    ReturnPassport:
-      description: OK, accepted
+    InvalidData:
+      description: Provided data is invalid
       content:
         application/json:
           schema:
-            oneOf:
-              - $ref: '#/components/schemas/RFPassport'
-              - $ref: '#/components/schemas/ForeignRFPassport'
-              - $ref: '#/components/schemas/NonRFPassport'
-            discriminator:
-              propertyName: passportType
-              #mapping:
-               # RFPassport: '#/components/schemas/RFPassport'
-               # ForeignRFPassport: '#/components/schemas/ForeignRFPassport'
-                #NonRFPassport: '#/components/schemas/NonRFPassport'
-    ReturnPassports:
-      description: OK, accepted
-      content:
-        application/json:
-          schema:
-            type: array
-            items:
-              oneOf:
-                - $ref: '#/components/schemas/RFPassport'
-                - $ref: '#/components/schemas/ForeignRFPassport'
-                - $ref: '#/components/schemas/NonRFPassport'
-              discriminator:
-                propertyName: passportType
+            type: object
+            properties:
+              errorID:
+                type: string
+                description: The ID if the error to provide to the helpDesk
+              entityName:
+                type: string
+                description: The name of the entity which occurs the error
+              propertyName:
+                type: string
+                description: The name of the property which occurs the error
+              errorDescription:
+                type: string
+                description: The human-reliable description of the error
+              errorCode:
+                type: string
+                description: The error code which encrypts the error, entityName and propertyName
 
-  requestBodies:
-    PostPassport:
-      required: true
-      content:
-        application/json:
-          schema:
-            oneOf:
-                - $ref: '#/components/schemas/RFPassport'
-                - $ref: '#/components/schemas/ForeignRFPassport'
-                - $ref: '#/components/schemas/NonRFPassport'
+  #  ReturnPassport:
+  #    description: OK, accepted
+  #    content:
+  #      application/json:
+  #        schema:
+  #          oneOf:
+  #            - $ref: '#/components/schemas/RFPassport'
+  #            - $ref: '#/components/schemas/ForeignRFPassport'
+  #            - $ref: '#/components/schemas/NonRFPassport'
+  #          discriminator:
+  #            propertyName: passportType
+  #            #mapping:
+  #             # RFPassport: '#/components/schemas/RFPassport'
+  #             # ForeignRFPassport: '#/components/schemas/ForeignRFPassport'
+  #              #NonRFPassport: '#/components/schemas/NonRFPassport'
+  #  ReturnPassports:
+  #    description: OK, accepted
+  #    content:
+  #      application/json:
+  #        schema:
+  #          type: array
+  #          items:
+  #            oneOf:
+  #              - $ref: '#/components/schemas/RFPassport'
+  #              - $ref: '#/components/schemas/ForeignRFPassport'
+  #              - $ref: '#/components/schemas/NonRFPassport'
+  #            discriminator:
+  #              propertyName: passportType
 
-
-
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      flows:                  #???
-        authorizationCode:
-          tokenUrl: someUrl
-          scopes:
-            read: Grants read access
-            write: write access
-
-security:
-  - BearerAuth: [ ]
+  #requestBodies:
+  #  PostPassport:
+  #    required: true
+  #    content:
+  #      application/json:
+  #        schema:
+  #          oneOf:
+  #              - $ref: '#/components/schemas/RFPassport'
+  #              - $ref: '#/components/schemas/ForeignRFPassport'
+  #              - $ref: '#/components/schemas/NonRFPassport'
