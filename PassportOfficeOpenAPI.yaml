@@ -153,7 +153,7 @@ paths:
         '404':
           description: Not found
 
-  /newPassport:
+  /passport:
     post:
       tags:
         - Passport
@@ -176,11 +176,19 @@ paths:
           description: Bad Request - invalid syntax
         '422':
           $ref: '#/components/responses/InvalidData'
+
     patch:
       tags:
         - Passport
       summary: Edit passport
       operationId: editPassport
+      parameters:
+        - name: passportID
+          in: query
+          required: true
+          description: Old passport ID
+          schema:
+            type: string
       requestBody:
         required: true
         content:
@@ -238,21 +246,18 @@ paths:
         '422':
           $ref: '#/components/responses/InvalidData'
 
-
-  /passport:
-    parameters:
-      - name: passportID
-        in: query
-        description: Passport ID
-        required: true
-        schema:
-          type: string
-
     get:
       tags:
         - Passport
       summary: Returns one passport
       operationId: getPassportBySeriesNumber
+      parameters:
+        - name: passportID
+          in: query
+          description: Passport ID
+          required: true
+          schema:
+            type: string
       responses:
         '200':
           description: OK
@@ -267,6 +272,13 @@ paths:
         - Passport
       summary: Mark passport as deleted by series and number
       operationId: deletePassport
+      parameters:
+        - name: passportID
+          in: query
+          description: Passport ID
+          required: true
+          schema:
+            type: string
       responses:
         '200':
           description: OK, entity updated
@@ -349,6 +361,13 @@ paths:
         - Person
       summary: edit one person
       operationId: editPerson
+      parameters:
+        - name: ID
+          in: query
+          description: The ID of the person
+          required: true
+          schema:
+            type: string
       requestBody:
         required: true
         content:
@@ -372,22 +391,10 @@ paths:
       summary: get persons by full name
       operationId: getPersonsByName
       parameters:
-        - name: name
+        - name: ID
           in: query
-          description: The name of the person
+          description: The ID of the person
           required: true
-          schema:
-            type: string
-        - name: surname
-          in: query
-          description: The surname of the person
-          required: true
-          schema:
-            type: string
-        - name: patronymic
-          in: query
-          description: The patronymic of the person
-          required: false
           schema:
             type: string
       responses:
@@ -512,33 +519,33 @@ components:
       items:
         oneOf:
           - allOf:
-              - $ref: '#/components/schemas/RFPassport'
-              - type: object
-                required:
-                  - number
-                  - person
-                  - personID
-                  - givenDepartment
-                  - series
-                  - givenDepartmentCode
+            - $ref: '#/components/schemas/RFPassport'
+            - type: object
+              required:
+                - number
+                - person
+                - personID
+                - givenDepartment
+                - series
+                - givenDepartmentCode
           - allOf:
-              - $ref: '#/components/schemas/ForeignRFPassport'
-              - type: object
-                required:
-                  - number
-                  - person
-                  - personID
-                  - givenDepartment
-                  - expirationDate
+            - $ref: '#/components/schemas/ForeignRFPassport'
+            - type: object
+              required:
+                - number
+                - person
+                - personID
+                - givenDepartment
+                - expirationDate
           - allOf:
-              - $ref: '#/components/schemas/NonRFPassport'
-              - type: object
-                required:
-                  - number
-                  - person
-                  - personID
-                  - givenDepartment
-                  - country
+            - $ref: '#/components/schemas/NonRFPassport'
+            - type: object
+              required:
+                - number
+                - person
+                - personID
+                - givenDepartment
+                - country
         discriminator:
           propertyName: passportType
           mapping:
