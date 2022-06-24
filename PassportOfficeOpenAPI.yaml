@@ -108,7 +108,7 @@ paths:
                 $ref: '#/components/schemas/PassportsListOut'
         '404':
           description: Not found
-        
+
 
   /search/persons/byBirthDate:
     get:
@@ -231,41 +231,6 @@ paths:
         '422':
           $ref: '#/components/responses/InvalidData'
 
-    put:
-      tags:
-        - Passport
-      summary: Add new passport to swap the old one
-      parameters:
-        - name: passportId
-          in: path
-          required: true
-          description: Old passport ID
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PassportIn'
-      responses:
-        '200':
-          description: OK, accepted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PassportOut'
-        '404':
-          description: Old Passport not found
-        '400':
-          description: Bad Request - invalid syntax
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PassportIn'
-        '422':
-          $ref: '#/components/responses/InvalidData'
-
     get:
       tags:
         - Passport
@@ -289,7 +254,7 @@ paths:
     delete:
       tags:
         - Passport
-      summary: Mark passport as deleted by series and number
+      summary: Delete passport by series and number
       parameters:
         - name: passportId
           in: path
@@ -400,6 +365,53 @@ paths:
                 $ref: '#/components/schemas/PersonIn'
         '422':
           $ref: '#/components/responses/InvalidData'
+
+    put:
+      tags:
+        - Person
+      summary: edit one person
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the person
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/PersonIn'
+                - type: object
+                  required:
+                    - name
+                    - surname
+                    - placeOfBirth
+                    - dateOfBirth
+      responses:
+        '200':
+          description: OK, entity updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonOut'
+        '400':
+          description: Bad Request - invalid syntax
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PersonIn'
+                  - type: object
+                    required:
+                      - name
+                      - surname
+                      - placeOfBirth
+                      - dateOfBirth
+        '422':
+          $ref: '#/components/responses/InvalidData'
     get:
       tags:
         - Person
@@ -433,7 +445,7 @@ paths:
             type: string
       responses:
         '204':
-          description: OK, entity edited
+          description: OK, entity deleted
         '404':
           description: Not found
 
