@@ -36,7 +36,7 @@ paths:
         - Search
       summary: Get passports by person's ID
       parameters:
-        - name: personID
+        - name: personId
           in: path
           required: true
           schema:
@@ -274,10 +274,10 @@ paths:
         - Passport
       summary: Post new passport instead of old one with the same data
       parameters:
-        - name: id
-          in: query
-          description: Internal passport ID
+        - name: passportId
+          in: path
           required: true
+          description: Old passport ID
           schema:
             type: string
       responses:
@@ -289,6 +289,7 @@ paths:
                 $ref: '#/components/schemas/PassportOut'
         '404':
           description: Old Passport not found
+
     patch:
       tags:
         - Passport
@@ -700,4 +701,3 @@ components:
           schema:
             type: string
             description: ErrorId
-            required: true
