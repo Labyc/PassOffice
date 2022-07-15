@@ -1,7 +1,8 @@
 package app;
 
 
-import app.models.Passport;
+import app.models.BasePassport;
+import app.models.Person;
 import lombok.Getter;
 import org.springframework.stereotype.Component;
 
@@ -11,15 +12,28 @@ import java.util.List;
 @Component
 public class DataStorage {
     @Getter
-    private List<Passport> passportList = new ArrayList<>(); //TODO refactor to map???
+    private List<BasePassport> passportsList = new ArrayList<>(); //TODO refactor to map???
+    @Getter
+    private List<Person> personsList = new ArrayList<>(); //TODO refactor to map???
 
-    public void addPassport(Passport passport){
-        this.passportList.add(passport);
+    public boolean addPerson(Person newPerson){
+        for (Person person: personsList){
+            if(person.getId().equals(newPerson.getId()))
+                return false;
+        }
+        personsList.add(newPerson);
+        return true;
     }
 
-    public Passport findExistingPassport(String series, String number){
-        for (Passport passport: passportList){
-            if (passport.getSeries().equals(series) && passport.getNumber().equals(number)){
+    //TODO refactor
+    public void addPassport(BasePassport passport){
+        this.passportsList.add(passport);
+    }
+
+    //TODO refactor
+    public BasePassport findExistingPassport(String passportId){
+        for (BasePassport passport: passportsList){
+            if (passport.getPassportId().equals(passportId)){
                 return passport;
             }
         }

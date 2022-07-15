@@ -1,7 +1,8 @@
 package app.bootstrap;
 
 import app.DataStorage;
-import app.models.Passport;
+import app.models.BasePassport;
+import app.models.PassportRF;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -21,8 +22,8 @@ public class BootStrap implements ApplicationListener<ContextRefreshedEvent> {
     }
 
     private void init(){
-        for (int i=0; i<10; i++){
-            dataStorage.addPassport(Passport.createRandomPassport());
-        }
+        /*for (int i=0; i<10; i++){
+            dataStorage.addPassport(PassportRF.createRandomPassport());
+        }*/
     }
 }
