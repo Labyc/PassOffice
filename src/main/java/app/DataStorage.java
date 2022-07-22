@@ -6,6 +6,7 @@ import app.models.Person;
 import lombok.Getter;
 import org.springframework.stereotype.Component;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +38,15 @@ public class DataStorage {
                 return passport;
             }
         }
-        return null; //bad idea
+        throw new EntityNotFoundException(String.format("Passport with id: '%s' not found.", passportId));
+    }
+
+    public Person findPerson(int personId){
+        for (Person person: personsList){
+            if (person.getId()==personId){
+                return person;
+            }
+        }
+        throw new EntityNotFoundException(String.format("Person with id: '%s' not found.", personId));
     }
 }

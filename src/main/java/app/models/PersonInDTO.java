@@ -9,12 +9,9 @@ import java.util.Date;
 
 @Data
 @AllArgsConstructor
-public class Person {
-    @NotNull
-    @Positive
-    private int id;
+public class PersonInDTO {
     @NotBlank
-    @Pattern (regexp = "\\p{Upper}\\w*")
+    @Pattern(regexp = "\\p{Upper}\\w*")
     private String name;
     @NotBlank
     @Pattern(regexp = "\\p{Upper}\\w*")
@@ -31,8 +28,4 @@ public class Person {
     @PastOrPresent
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private Date dateOfDeath;
-
-    @NotNull
-    @Positive
-    private int version;
 }
