@@ -1,8 +1,7 @@
 package app.controllers.api;
 
 import app.DataStorage;
-import app.models.BasePassport;
-import org.springframework.beans.factory.annotation.Autowired;
+import app.models.passport.BasePassport;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -12,13 +11,19 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.validation.Valid;
+import java.util.Objects;
 
 @Controller
 @RequestMapping("/passport")
 public class PassportAPIController {
 
-    @Autowired
-    DataStorage dataStorage;
+
+    private final DataStorage dataStorage;
+
+    public PassportAPIController(DataStorage dataStorage) {
+        this.dataStorage = Objects.requireNonNull(dataStorage);
+    }
+
 
     @Deprecated
     @GetMapping("/passports")

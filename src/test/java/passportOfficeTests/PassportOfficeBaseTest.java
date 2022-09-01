@@ -9,6 +9,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.net.URI;
+import java.util.Objects;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -19,9 +20,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ContextConfiguration(classes = TestConfiguration.class)
 public class PassportOfficeBaseTest {
 
-    @Autowired
-    MockMvc mockMvc;
+    private final MockMvc mockMvc;
 
+    @Autowired
+    PassportOfficeBaseTest(MockMvc mockMvc){
+        this.mockMvc = Objects.requireNonNull( mockMvc );
+    }
     @Test
     public void someTest() throws Exception {
         log.info("log");

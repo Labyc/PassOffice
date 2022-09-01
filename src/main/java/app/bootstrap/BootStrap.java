@@ -1,20 +1,22 @@
 package app.bootstrap;
 
 import app.DataStorage;
-import app.models.BasePassport;
-import app.models.PassportRF;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
 
 
 @Component
 public class BootStrap implements ApplicationListener<ContextRefreshedEvent> {
 
+    private final DataStorage dataStorage;
     @Autowired
-    DataStorage dataStorage;
+    BootStrap(DataStorage dataStorage){
+        this.dataStorage = Objects.requireNonNull(dataStorage);
+    }
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {

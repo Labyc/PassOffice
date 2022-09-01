@@ -1,14 +1,11 @@
-package app.models;
+package app.models.passport;
 
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import javax.validation.constraints.Digits;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
 
 @Data
 public abstract class BasePassport {

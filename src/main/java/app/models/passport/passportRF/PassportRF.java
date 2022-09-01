@@ -1,5 +1,7 @@
-package app.models;
+package app.models.passport.passportRF;
 
+import app.models.passport.BasePassport;
+import app.models.personRegistration.PersonRegistration;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -8,7 +10,7 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
-public class PassportRF extends BasePassport{
+public class PassportRF extends BasePassport {
 
     @Digits(integer = 4, fraction = 0, message = "Invalid Passport series")
     private String series;
