@@ -11,6 +11,7 @@ import java.util.UUID;
 @Getter
 public class ErrorResponse{
     private final String id = UUID.randomUUID().toString();
+    private final List<ResponseError> errors = new ArrayList<>();
 
     public ErrorResponse(ResponseError error){
         this.getErrors().add(error);
@@ -25,7 +26,6 @@ public class ErrorResponse{
                     '}';
         }
     }
-    private final List<ResponseError> errors = new ArrayList<>();
 
     @Override
     public String toString() {

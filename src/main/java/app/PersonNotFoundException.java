@@ -2,11 +2,13 @@ package app;
 
 import lombok.Getter;
 
+import java.util.UUID;
+
 @Getter
 public class PersonNotFoundException extends RuntimeException{
-    private final int personId;
+    private final String personId;
 
-    public PersonNotFoundException(int personId) {
+    public PersonNotFoundException(String personId) {
         super(String.format("person %s is not found", personId));
         this.personId = personId;
 

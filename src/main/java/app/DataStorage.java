@@ -3,26 +3,29 @@ package app;
 
 import app.models.passport.BasePassport;
 import app.models.person.Person;
+import app.models.person.PersonInDTO;
+import app.models.person.PersonOutDTO;
+import app.models.person.PersonPatchDTO;
 import lombok.Getter;
 import org.springframework.stereotype.Component;
 
-import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Component
 public class DataStorage {
     @Getter
-    private List<BasePassport> passportsList = new ArrayList<>(); //TODO refactor to map<id, entity>???
+    private List<BasePassport> passportsList = new ArrayList<>();
     @Getter
-    private List<Person.Storage> personsList = new ArrayList<>(); //TODO refactor to map<id, entity>???
+    private List<Person> personsList = new ArrayList<>();
 
-    public Person.Response addPerson(Person.Request newPerson){
-        Person.Storage newStoragePerson = new Person.Storage(newPerson);
+    public PersonOutDTO addPerson(PersonInDTO newPersonIn){
         //TODO verify unexistent ID
         //newStoragePerson.setId(UUID.randomUUID());
-        personsList.add(newStoragePerson);
-        return new Person.Response(newStoragePerson);
+        Person newPerson = newPersonIn.toPerson();
+        personsList.add(newPerson);
+        return PersonOutDTO.fromPerson(newPerson);
     }
 
     //TODO refactor
@@ -37,29 +40,31 @@ public class DataStorage {
                 return passport;
             }
         }
-        throw new EntityNotFoundException(String.format("Passport with id: '%s' not found.", passportId));
+        throw new PassportNotFoundException( passportId );
     }
 
-    public Person.Response findPersonById(String personId){
-        return new Person.Response(findStoragePersonById(personId));
+    public PersonOutDTO findPersonById(String personId){
+        return PersonOutDTO.fromPerson(findStoragePersonById(personId));
     }
 
-    private Person.Storage findStoragePersonById(String personId){
-        for (Person.Storage person: personsList){
+    private Person findStoragePersonById(String personId){
+        for (Person person: personsList){
             if (person.getId().toString().equals(personId)){
                 return person;
             }
         }
-        throw new EntityNotFoundException(String.format("Person with id: '%s' not found.", personId));
+        throw new PersonNotFoundException( personId );
     }
-    public Person.Response patchPerson(String personId, Person.PatchRequest editedPerson) {
-        Person.Storage personToPatch = findStoragePersonById(personId);
-        personToPatch.patch(editedPerson);
-        return new Person.Response(personToPatch);
+    public PersonOutDTO patchPerson(String personId, PersonPatchDTO editedPerson) {
+        Person personToPatch = findStoragePersonById(personId);
+        personToPatch.patch(editedPerson.toPerson(personToPatch.getId()));
+        return PersonOutDTO.fromPerson(personToPatch);
     }
 
-    public Person.Response putPerson(String personId, Person.Request editedPerson) {
-        return this.patchPerson(personId, editedPerson);
+    public PersonOutDTO putPerson(String personId, PersonInDTO editedPerson) {
+        Person person = findStoragePersonById(personId);
+        person = editedPerson.toPerson(person.getId(), person.getVersion() + 1);
+        return PersonOutDTO.fromPerson(person);
     }
 
     public boolean deletePersonById(String personId) {
