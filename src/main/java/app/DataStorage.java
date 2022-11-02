@@ -3,18 +3,17 @@ package app;
 
 import app.models.passport.BasePassport;
 import app.models.person.Person;
-import app.models.person.PersonInDTO;
-import app.models.person.PersonOutDTO;
-import app.models.person.PersonPatchDTO;
+import app.controllers.api.person.PersonInDTO;
+import app.controllers.api.person.PersonOutDTO;
+import app.controllers.api.person.PersonPatchDTO;
 import lombok.Getter;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Component
-public class DataStorage {
+public class DataStorage { //TODO implement interface and impl (inmemory/jdbs) +repository layer
     @Getter
     private List<BasePassport> passportsList = new ArrayList<>();
     @Getter
@@ -49,7 +48,7 @@ public class DataStorage {
 
     private Person findStoragePersonById(String personId){
         for (Person person: personsList){
-            if (person.getId().toString().equals(personId)){
+            if (person.id().toString().equals(personId)){
                 return person;
             }
         }
@@ -57,13 +56,18 @@ public class DataStorage {
     }
     public PersonOutDTO patchPerson(String personId, PersonPatchDTO editedPerson) {
         Person personToPatch = findStoragePersonById(personId);
-        personToPatch.patch(editedPerson.toPerson(personToPatch.getId()));
+        if(editedPerson.name() != null) personToPatch.withName(editedPerson.name());
+        if(editedPerson.surname() != null) personToPatch.withSurname(editedPerson.surname());
+        if(editedPerson.patronymic() != null) personToPatch.withPatronymic(editedPerson.patronymic());
+        if(editedPerson.dateOfBirth() != null) personToPatch.withDateOfBirth(editedPerson.dateOfBirth());
+        if(editedPerson.placeOfBirth() != null) personToPatch.withPlaceOfBirth(editedPerson.placeOfBirth());
+        if(editedPerson.dateOfDeath() != null) personToPatch.withDateOfDeath(editedPerson.dateOfDeath());
         return PersonOutDTO.fromPerson(personToPatch);
     }
 
     public PersonOutDTO putPerson(String personId, PersonInDTO editedPerson) {
         Person person = findStoragePersonById(personId);
-        person = editedPerson.toPerson(person.getId(), person.getVersion() + 1);
+        person = editedPerson.toPerson(person.id(), person.version() + 1);
         return PersonOutDTO.fromPerson(person);
     }
 

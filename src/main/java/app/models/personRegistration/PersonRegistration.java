@@ -2,6 +2,7 @@ package app.models.personRegistration;
 
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -9,7 +10,7 @@ import java.util.List;
 @Data
 public class PersonRegistration {
     private String registrationAddress;
-    private Date registrationDate;
+    private LocalDate registrationDate;
     private String registrationDepartment;
     private List<PersonRegistration> previousRegistrations;
 }

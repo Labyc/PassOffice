@@ -1,26 +1,27 @@
-package app.controllers.api;
+package app.controllers.api.passport;
 
 import app.DataStorage;
-import app.models.passport.BasePassport;
+import app.models.passport.PassportType;
+import app.models.passport.passportRF.PassportRFInDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import javax.validation.Valid;
+import java.util.Map;
 import java.util.Objects;
 
 @Controller
 @RequestMapping("/passport")
-public class PassportAPIController {
+public class PassportApiController {
 
 
     private final DataStorage dataStorage;
 
-    public PassportAPIController(DataStorage dataStorage) {
+    public PassportApiController(DataStorage dataStorage) {
         this.dataStorage = Objects.requireNonNull(dataStorage);
     }
 
@@ -31,15 +32,18 @@ public class PassportAPIController {
         return new ResponseEntity<>(dataStorage, HttpStatus.OK);
     }
 
-    @PostMapping()
-    public ResponseEntity<?> postPassport(@Valid BasePassport passport, Errors errors){
-        if (errors.hasErrors()){
-            return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    @PostMapping
+    public ResponseEntity<?> postPassport(@RequestBody Map<String, String> passportMap){
+        if (PassportType.valueOf(passportMap.get("passportType")).equals(PassportType.RF_PASSPORT)){
+            //passportMap.toString();
+            PassportRFInDTO passportRF = (PassportRFInDTO) passportMap;
+            dataStorage.addPassport(passportRF);
         }
-        if (dataStorage.findExistingPassport(passport.getPassportId())!=null){ //TODO some more validations
+        /*if (dataStorage.findExistingPassport(passport.getPassportId())!=null){ //TODO some more validations
             return new ResponseEntity<>("Passport with the same series and number is already exists" ,HttpStatus.NOT_ACCEPTABLE); //TODO normal exception (in Json format)???
         }
-        dataStorage.addPassport(passport);
+        dataStorage.addPassport(passport);*/
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
+
 }

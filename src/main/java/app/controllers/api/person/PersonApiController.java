@@ -1,13 +1,8 @@
-package app.controllers.api;
+package app.controllers.api.person;
 
 import app.DataStorage;
 import app.ErrorResponse;
-import app.PassportNotFoundException;
 import app.PersonNotFoundException;
-import app.models.person.Person;
-import app.models.person.PersonInDTO;
-import app.models.person.PersonOutDTO;
-import app.models.person.PersonPatchDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

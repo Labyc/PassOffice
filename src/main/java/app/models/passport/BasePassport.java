@@ -1,37 +1,39 @@
 package app.models.passport;
 
 
+import app.models.RegistrationData;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PastOrPresent;
+import javax.validation.constraints.Pattern;
+import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Data
-public abstract class BasePassport {
+@NoArgsConstructor
+public class BasePassport {
 
-    private String passportId;
     @NotNull
-    private String personId;
-    private Date givenDate;
+    PassportType passportType;
     @NotNull
-    private String givenDepartment;
-    private List<String> previousPassportsIds;
+    UUID personId;
+    @NotNull
+    @Pattern(regexp = "\\d{6}")
+    String number;
+    @PastOrPresent
+    //@Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}")
+    LocalDate givenDate;
+    @NotNull
+    @Pattern(regexp = "\\p{Upper}\\w*")
+    String givenDepartment;
+    List<UUID> otherPassportIds;
+
+    private UUID passportId;
     private boolean isActive;
-
-   /* @Deprecated
-    public static BasePassport createRandomPassport(){
-        Random random = new Random();
-        byte[] charArray = new byte[6];
-
-        String passportId = String.valueOf(random.nextInt(1, 99999));
-        String personId = String.valueOf(random.nextInt(1, 99999));
-        String number = String.valueOf(random.nextInt(100000, 999999));
-        Date givenDate = new Date(random.nextInt(122), random.nextInt(1, 12), random.nextInt(1,29));
-        random.nextBytes(charArray);
-        String givenDepartmentCode = String.valueOf(charArray);
-
-        return new BasePassport(passportId, number, personId, givenDate, givenDepartmentCode, new ArrayList<>(), true);
-    }*/
 
 }
