@@ -2,8 +2,10 @@ package app.controllers.api.person;
 
 import app.DataStorage;
 import app.ErrorResponse;
-import app.PersonNotFoundException;
+import app.PersonProcessor;
+import app.exceptions.PersonNotFoundException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -14,30 +16,31 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.Objects;
+import java.util.UUID;
 
 @Controller
 @RequestMapping("/person")
 @Slf4j
-public class PersonApiController {
+public class PersonApiController {      //TODO operate with DTO in controllers
 
-    private final DataStorage dataStorage;
+    private final PersonProcessor personProcessor;
 
-    public PersonApiController(DataStorage dataStorage) {
-        this.dataStorage = Objects.requireNonNull(dataStorage);
+    public PersonApiController(@Autowired PersonProcessor personProcessor) {
+        this.personProcessor = Objects.requireNonNull(personProcessor);
     }
 
 
     @PostMapping
     public ResponseEntity<?> createPerson(@Valid @RequestBody PersonInDTO newPerson) {
         log.info("person: {}, {}", newPerson.name());
-        PersonOutDTO createdPerson = dataStorage.addPerson(newPerson);
+        PersonOutDTO createdPerson = personProcessor.createEntity(newPerson);
         return new ResponseEntity<>(createdPerson, HttpStatus.CREATED);
     }
 
     @GetMapping("/{personId}")
     public ResponseEntity<?> getPersonById(@PathVariable("personId") String personId) {
         log.info("Get person by personId: '{}'", personId);
-        PersonOutDTO foundPerson = dataStorage.findPersonById(personId);
+        PersonOutDTO foundPerson = personProcessor.findById(personId);
         log.debug("Found person: '{}'", foundPerson);
         return new ResponseEntity<>(foundPerson, HttpStatus.OK);
     }
@@ -46,7 +49,7 @@ public class PersonApiController {
     public ResponseEntity<?> patchPersonById(@PathVariable("personId") String personId,
                                              @Valid @RequestBody PersonPatchDTO editedPerson) {
         log.info("Try patch person with id: '{}'", personId);
-        PersonOutDTO patchedPerson = dataStorage.patchPerson(personId, editedPerson);
+        PersonOutDTO patchedPerson = personProcessor.updateEntity(personId, editedPerson);
         return new ResponseEntity<>(patchedPerson, HttpStatus.OK);
     }
 
@@ -54,15 +57,15 @@ public class PersonApiController {
     public ResponseEntity<?> putPersonById(@PathVariable("personId") String personId,
                                              @Valid @RequestBody PersonInDTO editedPerson) {
         log.info("Try put person with id: '{}'", personId);
-        PersonOutDTO puttedPerson = dataStorage.putPerson(personId, editedPerson);
+        PersonOutDTO puttedPerson = personProcessor.replaceEntity(UUID.fromString(personId), editedPerson);
         return new ResponseEntity<>(puttedPerson, HttpStatus.OK);
     }
 
     @DeleteMapping("/{personId}")
     public ResponseEntity<?> deletePersonById(@PathVariable("personId") String personId){
         log.info("Try delete person with id: '{}'", personId);
-        if(dataStorage.deletePersonById(personId))
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        if(personProcessor.deleteById(personId)!=null)
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT); //Map returns deleted value, shouldn't we?
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

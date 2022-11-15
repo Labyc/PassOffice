@@ -1,6 +1,8 @@
 package app;
 
 
+import app.exceptions.PassportNotFoundException;
+import app.exceptions.PersonNotFoundException;
 import app.models.passport.BasePassport;
 import app.models.person.Person;
 import app.controllers.api.person.PersonInDTO;

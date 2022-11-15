@@ -19,7 +19,7 @@ public record PersonInDTO(
         @PastOrPresent /*@Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}")*/ LocalDate dateOfDeath) {
 
     public Person toPerson() {
-        return new Person(UUID.randomUUID(),
+        return new Person(null,
                 name,
                 surname,
                 patronymic,
