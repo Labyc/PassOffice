@@ -1,14 +1,14 @@
 package app.models.passport.passportRFForeign;
 
 import app.models.passport.BasePassport;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.NotNull;
 
-import javax.validation.constraints.Digits;
-import javax.validation.constraints.NotNull;
-import java.util.Date;
+import java.time.LocalDate;
 
 public class PassportRFForeign extends BasePassport {
     @NotNull
-    private Date expirationDate;
+    private LocalDate expirationDate;
     @Digits(integer = 8, fraction = 0, message = "Invalid Passport number")
     private String number;
 
