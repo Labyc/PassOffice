@@ -1,20 +1,18 @@
 package app.controllers.api.person;
 
 import app.models.person.Person;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Pattern;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.PastOrPresent;
-import javax.validation.constraints.Pattern;
 import java.time.LocalDate;
-import java.util.Date;
-import java.util.UUID;
 
 
 public record PersonInDTO(
-        @NotNull @Pattern(regexp = "\\p{Upper}\\w*") String name,
-        @NotNull @Pattern(regexp = "\\p{Upper}\\w*") String surname,
-        @Pattern(regexp = "\\p{Upper}\\w*") String patronymic,
-        @NotNull @Pattern(regexp = "\\p{Upper}.*") String placeOfBirth,
+        @NotNull @Pattern(regexp = "\\p{Lu}(\\p{L}|\\s)*") String name,
+        @NotNull @Pattern(regexp = "\\p{Lu}(\\p{L}|\\s)*") String surname,
+        @Pattern(regexp = "(\\p{Lu}(\\p{L}|\\s)*)|^(?![\\s\\S])") String patronymic,
+        @NotNull @Pattern(regexp = "\\p{Lu}(\\p{L}|\\s)*") String placeOfBirth,
         @NotNull @PastOrPresent /*@Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}") */LocalDate dateOfBirth,
         @PastOrPresent /*@Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}")*/ LocalDate dateOfDeath) {
 
@@ -29,7 +27,7 @@ public record PersonInDTO(
                 0);
     }
 
-    public Person toPerson(UUID existingPersonId, int version) {
+    public Person toPerson(String existingPersonId, int version) {
         return new Person(existingPersonId,
                 name,
                 surname,

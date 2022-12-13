@@ -1,23 +1,13 @@
 package app.controllers.api.passport;
 
-import app.DataStorage;
-import app.models.passport.PassportType;
-import app.models.passport.passportRF.PassportRFInDTO;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.util.Map;
-import java.util.Objects;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequestMapping("/passport")
 public class PassportApiController {
-
+/*
 
     private final DataStorage dataStorage;
 
@@ -42,8 +32,8 @@ public class PassportApiController {
         /*if (dataStorage.findExistingPassport(passport.getPassportId())!=null){ //TODO some more validations
             return new ResponseEntity<>("Passport with the same series and number is already exists" ,HttpStatus.NOT_ACCEPTABLE); //TODO normal exception (in Json format)???
         }
-        dataStorage.addPassport(passport);*/
+        dataStorage.addPassport(passport);*//*
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
-    }
+    }*/
 
 }

@@ -2,10 +2,10 @@ package app.models.passport.passportRF;
 
 import app.models.passport.BasePassport;
 import app.models.personRegistration.PersonRegistration;
+import jakarta.validation.constraints.Digits;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import javax.validation.constraints.Digits;
 import java.util.List;
 
 @Data
@@ -18,7 +18,4 @@ public class PassportRF extends BasePassport {
     private String number;
     private String givenDepartmentCode;
     private List<PersonRegistration> registrationList;
-    public static BasePassport createRandomPassport() {
-        return null;
-    }
 }

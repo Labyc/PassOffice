@@ -68,5 +68,5 @@ public interface EntityRepository<E, ID> extends Repository<E, ID> {
      * @param id must not be {@literal null}.
      * @throws IllegalArgumentException in case the given {@literal id} is {@literal null}
      */
-    E deleteById(ID id);
+    Optional<E> deleteById(ID id);
 }

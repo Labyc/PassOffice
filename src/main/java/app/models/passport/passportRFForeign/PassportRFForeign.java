@@ -1,11 +1,10 @@
 package app.models.passport.passportRFForeign;
 
 import app.models.passport.BasePassport;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.NotNull;
 
-import javax.validation.constraints.Digits;
-import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
-import java.util.Date;
 
 public class PassportRFForeign extends BasePassport {
     @NotNull

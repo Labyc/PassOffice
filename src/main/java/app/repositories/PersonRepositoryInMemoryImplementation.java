@@ -1,55 +1,53 @@
 package app.repositories;
 
-import app.exceptions.PersonNotFoundException;
+import app.exceptions.EntityNotFoundException;
 import app.exceptions.UpdatingObjectsIdsMismatchException;
 import app.models.person.Person;
-import lombok.Synchronized;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
 
 import java.util.*;
 
 @Component
-public class PersonRepositoryInMemoryImplementation implements EntityRepository<Person, UUID> {
+public class PersonRepositoryInMemoryImplementation implements EntityRepository<Person, String> {
 
-    Map<UUID, Person> personsMap = new HashMap<>();
+    Map<String, Person> personsMap = new HashMap<>();
 
     @Override
-    public Person add(Person person) {
-        Assert.notNull(person, "Creatable person must not be null!");
-        //verify duplications???
-        UUID personId = UUID.randomUUID();
-        while (personsMap.containsKey(personId))
-            personId = UUID.randomUUID();
-        Person newPerson = new Person(personId, person.name(), person.surname(), person.patronymic(), person.placeOfBirth(), person.dateOfBirth(), person.dateOfDeath(), 0);
+    public Person add(@NotNull Person person) {
+        //TODO verify duplications???
+        String personId;
+        do{
+            personId = UUID.randomUUID().toString();
+        }while (personsMap.containsKey(personId));
+        Person newPerson = person.withId(personId).withVersion(0);
         personsMap.put(personId, newPerson);
         return newPerson;
     }
 
     @Override
-    @Synchronized
-    public synchronized Person replace(UUID personId, Person oldPerson, Person newPerson) {
+    public synchronized Person replace(String personId, Person oldPerson, Person newPerson) {
         if (personId==null){
-            throw new PersonNotFoundException("null");
+            throw new EntityNotFoundException("null");
         }
-        if (!personId.equals(newPerson.id()) || !personId.equals(oldPerson.id())) {  //???
+        if (!personId.equals(newPerson.id()) || !personId.equals(oldPerson.id())) {
             throw new UpdatingObjectsIdsMismatchException(personId, oldPerson.id(), newPerson.id());
         }
-        if (!personsMap.replace(personId, oldPerson, newPerson)) { //looks like this should guarantee that if the entity was changed in parallel, so it throws an exception
+        if (!personsMap.replace(personId, oldPerson, newPerson)) {
             throw new ObjectOptimisticLockingFailureException(Person.class, personId);
         }
         return personsMap.get(personId);
     }
 
     @Override
-    public Optional<Person> findById(UUID uuid) {
-        return personsMap.containsKey(uuid) ? Optional.ofNullable(personsMap.get(uuid)) : Optional.empty();
+    public Optional<Person> findById(String id) {
+        return Optional.ofNullable(personsMap.get(id));
     }
 
     @Override
-    public boolean existsById(UUID uuid) {
-        return personsMap.containsKey(uuid);
+    public boolean existsById(String id) {
+        return personsMap.containsKey(id);
     }
 
     @Override
@@ -63,7 +61,7 @@ public class PersonRepositoryInMemoryImplementation implements EntityRepository<
     }
 
     @Override
-    public Person deleteById(UUID uuid) {
-        return personsMap.remove(uuid);
+    public Optional<Person> deleteById(String id) {
+        return Optional.of(personsMap.remove(id));
     }
 }

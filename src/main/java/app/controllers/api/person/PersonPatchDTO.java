@@ -1,22 +1,21 @@
 package app.controllers.api.person;
 
 import app.models.person.Person;
+import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Pattern;
+import org.apache.logging.log4j.util.Strings;
 
-import javax.validation.constraints.PastOrPresent;
-import javax.validation.constraints.Pattern;
 import java.time.LocalDate;
-import java.util.Date;
-import java.util.UUID;
 
-public record PersonPatchDTO(@Pattern(regexp = "\\p{Upper}\\w*") String name,
-                             @Pattern(regexp = "\\p{Upper}\\w*") String surname,
-                             @Pattern(regexp = "\\p{Upper}\\w*") String patronymic,
-                             @Pattern(regexp = "\\p{Upper}.*") String placeOfBirth,
+public record PersonPatchDTO(@Pattern(regexp = "\\p{Lu}(\\p{L}|\\s)*") String name,
+                             @Pattern(regexp = "\\p{Lu}(\\p{L}|\\s)*") String surname,
+                             @Pattern(regexp = "(\\p{Lu}(\\p{L}|\\s)*)|^(?![\\s\\S])") String patronymic,
+                             @Pattern(regexp = "\\p{Lu}(\\p{L}|\\s)*") String placeOfBirth,
                              @PastOrPresent LocalDate dateOfBirth,
                              @PastOrPresent LocalDate dateOfDeath ) {
 
     public Person toPerson() {
-        return new Person(UUID.randomUUID(),
+        return new Person(Strings.EMPTY,
                 name,
                 surname,
                 patronymic,
@@ -26,7 +25,7 @@ public record PersonPatchDTO(@Pattern(regexp = "\\p{Upper}\\w*") String name,
                 0);
     }
 
-    public Person toPerson(UUID existingPersonId) {
+    public Person toPerson(String existingPersonId) {
         return new Person(existingPersonId,
                 name,
                 surname,

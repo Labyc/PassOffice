@@ -1,26 +1,28 @@
 package app.controllers.api.person;
 
-import app.DataStorage;
 import app.ErrorResponse;
 import app.PersonProcessor;
-import app.exceptions.PersonNotFoundException;
+import app.exceptions.EntityNotFoundException;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.util.Objects;
-import java.util.UUID;
 
+@RestController
 @Controller
 @RequestMapping("/person")
 @Slf4j
+@Tag(name = "Keyboard and some other devices API")
 public class PersonApiController {      //TODO operate with DTO in controllers
 
     private final PersonProcessor personProcessor;
@@ -31,33 +33,36 @@ public class PersonApiController {      //TODO operate with DTO in controllers
 
 
     @PostMapping
-    public ResponseEntity<?> createPerson(@Valid @RequestBody PersonInDTO newPerson) {
-        log.info("person: {}, {}", newPerson.name());
+    public ResponseEntity<PersonOutDTO> createPerson(@Valid @RequestBody PersonInDTO newPerson) {
+        log.info("person: '{}'", newPerson.name());
         PersonOutDTO createdPerson = personProcessor.createEntity(newPerson);
+        log.info("Created new person:\n'{}'", createdPerson);
         return new ResponseEntity<>(createdPerson, HttpStatus.CREATED);
     }
 
     @GetMapping("/{personId}")
-    public ResponseEntity<?> getPersonById(@PathVariable("personId") String personId) {
+    public ResponseEntity<PersonOutDTO> getPersonById(@PathVariable("personId") String personId) {
         log.info("Get person by personId: '{}'", personId);
         PersonOutDTO foundPerson = personProcessor.findById(personId);
-        log.debug("Found person: '{}'", foundPerson);
+        log.info("Found person:\n'{}'", foundPerson);
         return new ResponseEntity<>(foundPerson, HttpStatus.OK);
     }
 
     @PatchMapping("/{personId}")
-    public ResponseEntity<?> patchPersonById(@PathVariable("personId") String personId,
+    public ResponseEntity<PersonOutDTO> patchPersonById(@PathVariable("personId") String personId,
                                              @Valid @RequestBody PersonPatchDTO editedPerson) {
         log.info("Try patch person with id: '{}'", personId);
         PersonOutDTO patchedPerson = personProcessor.updateEntity(personId, editedPerson);
+        log.info("Patched person:\n'{}'", patchedPerson);
         return new ResponseEntity<>(patchedPerson, HttpStatus.OK);
     }
 
     @PutMapping("/{personId}")
-    public ResponseEntity<?> putPersonById(@PathVariable("personId") String personId,
+    public ResponseEntity<PersonOutDTO> putPersonById(@PathVariable("personId") String personId,
                                              @Valid @RequestBody PersonInDTO editedPerson) {
         log.info("Try put person with id: '{}'", personId);
-        PersonOutDTO puttedPerson = personProcessor.replaceEntity(UUID.fromString(personId), editedPerson);
+        PersonOutDTO puttedPerson = personProcessor.replaceEntity(personId, editedPerson);
+        log.info("Putted person:\n'{}'", puttedPerson);
         return new ResponseEntity<>(puttedPerson, HttpStatus.OK);
     }
 
@@ -70,14 +75,16 @@ public class PersonApiController {      //TODO operate with DTO in controllers
     }
 
     @ExceptionHandler
-    public ResponseEntity<ErrorResponse> handleEntityNotFoundException(PersonNotFoundException e) {
+    public ResponseEntity<ErrorResponse> handleEntityNotFoundException(EntityNotFoundException e) {
         log.error("", e);
-        ErrorResponse response = new ErrorResponse(new ErrorResponse.ResponseError("PERSON_NOT_FOUND", "Can't find person with id " + e.getPersonId()));
-        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        ErrorResponse errorResponse = new ErrorResponse(e.getClass().getSimpleName(), e.getMessage());
+        log.error(errorResponse.toString());
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        log.error("", e);
         ErrorResponse errorResponse = new ErrorResponse();
         for (ObjectError error : e.getBindingResult().getAllErrors()) {
             if (error instanceof FieldError fieldError) {
@@ -88,6 +95,14 @@ public class PersonApiController {      //TODO operate with DTO in controllers
                 errorResponse.getErrors().add(new ErrorResponse.ResponseError("Unknown Error", error.toString()));
             }
         }
+        log.error(errorResponse.toString());
+        return new ResponseEntity<>(errorResponse, HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException e){
+        log.error("", e);
+        ErrorResponse errorResponse = new ErrorResponse(e.getClass().getSimpleName(), e.getMessage());
         log.error(errorResponse.toString());
         return new ResponseEntity<>(errorResponse, HttpStatus.UNPROCESSABLE_ENTITY);
     }

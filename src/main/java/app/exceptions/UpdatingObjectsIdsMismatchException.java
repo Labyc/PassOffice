@@ -2,15 +2,13 @@ package app.exceptions;
 
 import lombok.Getter;
 
-import java.util.UUID;
-
 @Getter
 public class UpdatingObjectsIdsMismatchException extends RuntimeException {
-    private UUID requiredId;
-    private UUID oldEntityId;
-    private UUID newEntityId;
+    private final String requiredId;
+    private final String oldEntityId;
+    private final String newEntityId;
 
-    public UpdatingObjectsIdsMismatchException(UUID requiredId, UUID oldEntityId, UUID newEntityId) {
+    public UpdatingObjectsIdsMismatchException(String requiredId, String oldEntityId, String newEntityId) {
         super(String.format("Entered '%s', old entity '%s' and new entity '%s' ids must equals each other", requiredId, oldEntityId, newEntityId));
         this.requiredId =requiredId;
         this.oldEntityId = oldEntityId;
