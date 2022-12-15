@@ -1,12 +1,13 @@
 package app.controllers.api.passport;
 
 
+import app.controllers.api.ExceptionHandlingController;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequestMapping("/passport")
-public class PassportApiController {
+public class PassportApiController implements ExceptionHandlingController {
 /*
 
     private final DataStorage dataStorage;
