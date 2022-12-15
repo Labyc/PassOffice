@@ -4,6 +4,8 @@ import app.exceptions.UpdatingObjectsIdsMismatchException;
 import org.springframework.data.repository.Repository;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 public interface EntityRepository<E, ID> extends Repository<E, ID> {

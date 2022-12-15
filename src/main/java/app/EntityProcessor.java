@@ -1,7 +1,6 @@
 package app;
 
 
-import app.controllers.api.person.PersonPatchDTO;
 import app.exceptions.EntityNotFoundException;
 
 public interface EntityProcessor<PatchRequestDTO, RequestDTO, ResponseDTO> {
