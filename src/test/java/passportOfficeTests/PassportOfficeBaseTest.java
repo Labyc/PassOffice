@@ -1,37 +1,33 @@
 package passportOfficeTests;
 
-import app.controllers.api.PassportAPIController;
+import io.restassured.RestAssured;
+import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.filter.log.LogDetail;
+import io.restassured.http.ContentType;
+import io.restassured.specification.RequestSpecification;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.junit.jupiter.api.BeforeAll;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.web.servlet.MockMvc;
-
-import java.net.URI;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Slf4j
-//@SpringBootTest(classes = {TestConfiguration.class})
-@WebMvcTest(controllers = {PassportAPIController.class})
+@SpringBootTest(classes = {TestConfiguration.class})
 @ContextConfiguration(classes = TestConfiguration.class)
 public class PassportOfficeBaseTest {
 
-    @Autowired
-    MockMvc mockMvc;
+    @BeforeAll
+    static void setup() {
+        log.info("setup started");
+        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
 
-    @Test
-    public void someTest() throws Exception {
-        log.info("log");
-        URI uri = new URI("http://192.168.37.200:8090/api/passports");
-        /*URL url = new URL("http://192.168.37.200:8090/api/passports");
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        con.setRequestMethod("GET");
-        int status = con.getResponseCode();
-        log.info("status:'{}'",status);*/
-        mockMvc.perform(get(uri))
-                .andExpect(status().isOk());
+        RequestSpecification requestSpec = new RequestSpecBuilder()
+                .setBaseUri("http://127.0.0.1")
+                .setPort(8090)
+                .setAccept(ContentType.JSON)
+                .setContentType(ContentType.JSON)
+                .log(LogDetail.ALL)
+                .build();
+
+        RestAssured.requestSpecification = requestSpec;
     }
 }
