@@ -1,12 +1,11 @@
-package passportOfficeTests.personApiTests;
+package app.controllers.api.person;
 
-import app.controllers.api.person.PersonInDTO;
-import app.controllers.api.person.PersonOutDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.restassured.RestAssured;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -20,11 +19,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-@Deprecated
-@TestInstance(TestInstance.Lifecycle.PER_METHOD)
-public class PersonTestsPositive extends PassportOfficeBaseTest {
+import static org.junit.jupiter.api.Assertions.*;
 
-    private static Stream<PersonInDTO> testPostPersonPositive() {
+@TestInstance(TestInstance.Lifecycle.PER_METHOD)
+class PersonApiControllerTest extends PassportOfficeBaseTest {
+
+    private static Stream<PersonInDTO> createPerson() {
         return Stream.of(
                 new PersonInDTO("Name", "Surname", null, "Place of birth", LocalDate.of(1995, 3, 2), null),
                 new PersonInDTO("Namee", "Surnamee", "Patronymicc", "PlaceOfBirthh", LocalDate.of(2022, 1, 1), LocalDate.of(2022, 1, 2)),
@@ -35,11 +35,10 @@ public class PersonTestsPositive extends PassportOfficeBaseTest {
 
     }
 
-
     @ParameterizedTest
     @MethodSource
     @DisplayName("(* ^ ω ^)")// ╯°□°）╯
-    public void testPostPersonPositive(PersonInDTO personInDTO) {
+    public void createPerson(PersonInDTO personInDTO) {
         RestAssured.with().body(personInDTO).post("/person").then().statusCode(201)
                 .body("name", Matchers.equalTo(personInDTO.name()))
                 .body("surname", Matchers.equalTo(personInDTO.surname()))
@@ -49,7 +48,12 @@ public class PersonTestsPositive extends PassportOfficeBaseTest {
                 .body("dateOfDeath", Matchers.equalTo(personInDTO.dateOfDeath() != null ? personInDTO.dateOfDeath().toString() : null));
     }
 
-    private static Stream<Arguments> putPersonTestDP() {
+
+    @Test
+    void getPersonById() {
+    }
+
+    private static Stream<Arguments> putPersonByIdDP() {
         return Stream.of(
                 Arguments.of(new PersonInDTO("Name", "Surname", "Patronymic", "PlaceOfBirth", LocalDate.of(2022, 1, 1), null),
                         new PersonInDTO("Name", "Surname", "Patronymic", "PlaceOfBirth", LocalDate.of(2022, 1, 1), null),
@@ -88,9 +92,9 @@ public class PersonTestsPositive extends PassportOfficeBaseTest {
     }
 
     @ParameterizedTest
-    @MethodSource("putPersonTestDP")
+    @MethodSource("putPersonByIdDP")
     @DisplayName("╯°□°）╯")
-    public void putPersonTest(PersonInDTO personPostRequest, PersonInDTO personPutRequest, String verification) {
+    public void putPersonById(PersonInDTO personPostRequest, PersonInDTO personPutRequest, String verification) {
 
         PersonOutDTO personResponse = RestAssured.with().body(personPostRequest).post("/person")
                 .then().statusCode(201).extract().body().as(PersonOutDTO.class);
@@ -106,7 +110,7 @@ public class PersonTestsPositive extends PassportOfficeBaseTest {
         Assertions.assertEquals(personPutRequest.dateOfDeath(), personResponse.dateOfDeath());
     }
 
-    private static Stream<Arguments> patchPersonTestDP() {
+    private static Stream<Arguments> patchPersonById() {
         return Stream.of(
                 Arguments.of(new PersonInDTO("Name", "Surname", "Patronymic", "PlaceOfBirth", LocalDate.of(2022, 1, 1), null),
                         new PersonInDTO(null, null, null, null, null, null),
@@ -142,10 +146,9 @@ public class PersonTestsPositive extends PassportOfficeBaseTest {
     }
 
     @ParameterizedTest
-    @MethodSource({"patchPersonTestDP", "putPersonTestDP"})
+    @MethodSource({"patchPersonById", "putPersonByIdDP"})
     @DisplayName("(◕‿◕)")
-    public void patchPersonTest(PersonInDTO personPostRequest, PersonInDTO personPatchRequest, String verification) {
-
+    public void patchPersonById(PersonInDTO personPostRequest, PersonInDTO personPatchRequest, String verification) {
         PersonOutDTO personResponse = RestAssured.with().body(personPostRequest).post("/person")
                 .then().statusCode(201).extract().body().as(PersonOutDTO.class);
         personResponse = RestAssured.with().body(personPatchRequest).pathParam("personId", personResponse.id()).patch("/person/{personId}")
@@ -160,7 +163,11 @@ public class PersonTestsPositive extends PassportOfficeBaseTest {
         Assertions.assertEquals(personPatchRequest.dateOfDeath() != null ? personPatchRequest.dateOfDeath() : personPostRequest.dateOfDeath(), personResponse.dateOfDeath());
     }
 
-    private static List<Map<String, String>> searchPersonsTest() {
+    @Test
+    void deletePersonById() {
+    }
+
+    private static List<Map<String, String>> findPerson() {
         List<Map<String, String>> requests = new ArrayList<>();
 
         HashMap<String, String> map = new HashMap<>();
@@ -204,7 +211,7 @@ public class PersonTestsPositive extends PassportOfficeBaseTest {
     @ParameterizedTest
     @DisplayName("(⌐■_■)")
     @MethodSource
-    public void searchPersonsTest(Map<String, String> requestQueryParameters) {
+    public void findPerson(Map<String, String> requestQueryParameters) {
         List<PersonOutDTO> foundPersonsList = RestAssured.with().queryParams(requestQueryParameters).get("/person").then().statusCode(200).extract().body().as(new ObjectMapper().getTypeFactory().constructCollectionType(List.class, PersonOutDTO.class));//.class);
         for (PersonOutDTO person : foundPersonsList) {
             if (requestQueryParameters.get("personName") != null)
@@ -217,5 +224,4 @@ public class PersonTestsPositive extends PassportOfficeBaseTest {
                 Assertions.assertTrue(person.dateOfBirth().isBefore(LocalDate.parse(requestQueryParameters.get("birthEndDate"))));
         }
     }
-
 }

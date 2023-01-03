@@ -11,8 +11,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 
 @Slf4j
-@SpringBootTest(classes = {TestConfiguration.class})
-@ContextConfiguration(classes = TestConfiguration.class)
+/*@SpringBootTest(classes = {TestConfiguration.class})
+@ContextConfiguration(classes = TestConfiguration.class)*/
 public class PassportOfficeBaseTest {
 
     @BeforeAll

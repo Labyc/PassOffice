@@ -33,13 +33,10 @@ public class PersonApiController implements ExceptionHandlingController {
         this.personProcessor = Objects.requireNonNull(personProcessor);
     }
 
-
-    @PostMapping(consumes = "application/json", produces = "application/json")
+    @PostMapping(consumes = "application/json")
     public ResponseEntity<PersonOutDTO> createPerson(@Valid @RequestBody PersonInDTO newPerson) {
-        Object obj = new Object();
-        final String gotName = "";
         log.info("person: '{}'", newPerson.name());
-        PersonOutDTO createdPerson = personProcessor.createEntity(newPerson);
+        PersonOutDTO createdPerson = PersonOutDTO.fromPerson(personProcessor.createEntity(newPerson.toPerson()));
         log.info("Created new person:\n'{}'", createdPerson);
         return new ResponseEntity<>(createdPerson, HttpStatus.CREATED);
     }
@@ -47,25 +44,25 @@ public class PersonApiController implements ExceptionHandlingController {
     @GetMapping("/{personId}")
     public ResponseEntity<PersonOutDTO> getPersonById(@PathVariable("personId") String personId) {
         log.info("Get person by personId: '{}'", personId);
-        PersonOutDTO foundPerson = personProcessor.findById(personId);
+        PersonOutDTO foundPerson = PersonOutDTO.fromPerson(personProcessor.findById(personId));
         log.info("Found person:\n'{}'", foundPerson);
         return new ResponseEntity<>(foundPerson, HttpStatus.OK);
     }
 
-    @PatchMapping(path = "/{personId}", consumes = "application/json", produces = "application/json")
+    @PatchMapping(path = "/{personId}", consumes = "application/json")
     public ResponseEntity<PersonOutDTO> patchPersonById(@PathVariable("personId") String personId,
                                                         @Valid @RequestBody PersonPatchDTO editedPerson) {
         log.info("Try patch person with id: '{}'", personId);
-        PersonOutDTO patchedPerson = personProcessor.updateEntity(personId, editedPerson);
+        PersonOutDTO patchedPerson = PersonOutDTO.fromPerson(personProcessor.updateEntity(personId, editedPerson.toPerson()));
         log.info("Patched person:\n'{}'", patchedPerson);
         return new ResponseEntity<>(patchedPerson, HttpStatus.OK);
     }
 
-    @PutMapping(path = "/{personId}", consumes = "application/json", produces = "application/json")
+    @PutMapping(path = "/{personId}", consumes = "application/json")
     public ResponseEntity<PersonOutDTO> putPersonById(@PathVariable("personId") String personId,
                                                       @Valid @RequestBody PersonInDTO editedPerson) {
         log.info("Try put person with id: '{}'", personId);
-        PersonOutDTO puttedPerson = personProcessor.replaceEntity(personId, editedPerson);
+        PersonOutDTO puttedPerson = PersonOutDTO.fromPerson(personProcessor.replaceEntity(personId, editedPerson.toPerson()));
         log.info("Putted person:\n'{}'", puttedPerson);
         return new ResponseEntity<>(puttedPerson, HttpStatus.OK);
     }
@@ -78,7 +75,7 @@ public class PersonApiController implements ExceptionHandlingController {
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @GetMapping(produces = {"application/json", "text/json"})
+    @GetMapping
     public ResponseEntity<List<PersonOutDTO>> findPerson(
             @RequestParam("personName") Optional<String> personName, @RequestParam("personSurname") Optional<String> surName,
             @RequestParam("birthStartDate") Optional<@PastOrPresent LocalDate> birthStartDate,
@@ -90,7 +87,9 @@ public class PersonApiController implements ExceptionHandlingController {
             throw new IncorrectQueryParametersException("Start date must be before the end date.");
         }
         log.info("Try find person with parameters: Name='{}', Surname='{}', birthStartDate='{}', birthEndDate='{}'", personName, surName, birthStartDate, birthEndDate);
-        List<PersonOutDTO> foundPersons = personProcessor.findPerson(personName, surName, birthStartDate, birthEndDate);
+        List<PersonOutDTO> foundPersons = personProcessor
+                .findPerson(personName.orElse(null), surName.orElse(null), birthStartDate.orElse(null), birthEndDate.orElse(null))
+                .stream().map(PersonOutDTO::fromPerson).toList();
         log.info("Found person: '{}'", foundPersons);
         return new ResponseEntity<>(foundPersons, HttpStatus.OK);
     }

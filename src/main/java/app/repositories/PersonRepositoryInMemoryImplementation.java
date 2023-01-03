@@ -7,7 +7,6 @@ import jakarta.validation.constraints.NotNull;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
 
-import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -17,8 +16,7 @@ public class PersonRepositoryInMemoryImplementation implements PersonRepository 
     Map<String, Person> personsMap = new HashMap<>();
 
     @Override
-    public Person add(@NotNull Person person) {
-        //TODO verify duplications???
+    public synchronized Person add(@NotNull Person person) {
         String personId;
         do {
             personId = UUID.randomUUID().toString();
@@ -68,12 +66,12 @@ public class PersonRepositoryInMemoryImplementation implements PersonRepository 
     }
 
     @Override
-    public List<Person> findPerson(Optional<String> personName, Optional<String> surName, Optional<LocalDate> birthStartDate, Optional<LocalDate> birthEndDate) {
+    public List<Person> findPerson(String personName, String surName, LocalDate birthStartDate, LocalDate birthEndDate) {
         return personsMap.values().stream()
-                .filter(person -> personName.map(nameStr -> nameStr.equals(person.name())).orElse(true))
-                .filter(person -> surName.map(surNameStr -> surNameStr.equals(person.surname())).orElse(true))
-                .filter(person -> birthStartDate.map(startDate -> startDate.isBefore(person.dateOfBirth())).orElse(true))
-                .filter(person -> birthEndDate.map(endDate -> endDate.isAfter(person.dateOfBirth())).orElse(true))
+                .filter(person -> personName==null || person.name().equals(personName))
+                .filter(person -> surName == null || person.surname().equals(surName))
+                .filter(person -> birthStartDate == null || person.dateOfBirth().isAfter(birthStartDate))
+                .filter(person -> birthEndDate == null || person.dateOfBirth().isBefore(birthEndDate))
                 .toList();
     }
 }
