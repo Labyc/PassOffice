@@ -1,6 +1,5 @@
 package app.models.passport.passportRF;
 
-import app.models.RegistrationData;
 import app.models.passport.BasePassport;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -22,6 +21,5 @@ public class PassportRFInDTO extends BasePassport {
         @NotNull
         @Pattern(regexp = "\\d{3}-\\d{3}")
         String givenDepartmentCode;
-        List<RegistrationData> registrationDataList;
 
 }

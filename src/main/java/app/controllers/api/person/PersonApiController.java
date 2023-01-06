@@ -1,7 +1,6 @@
 package app.controllers.api.person;
 
 import app.PersonProcessor;
-import app.controllers.api.ExceptionHandlingController;
 import app.exceptions.IncorrectQueryParametersException;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -10,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,12 +18,11 @@ import java.util.Objects;
 import java.util.Optional;
 
 @RestController
-@Controller
 @RequestMapping(value = "/person", produces = "application/json")
 @Slf4j
 @Tag(name = "get/add/edit/delete Person info")
 @Validated
-public class PersonApiController implements ExceptionHandlingController {
+public class PersonApiController{
 
     private final PersonProcessor personProcessor;
 
@@ -70,9 +67,8 @@ public class PersonApiController implements ExceptionHandlingController {
     @DeleteMapping("/{personId}")
     public ResponseEntity<?> deletePersonById(@PathVariable("personId") String personId) {
         log.info("Try delete person with id: '{}'", personId);
-        if (personProcessor.deleteById(personId) != null)
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT); //Map returns deleted value, shouldn't we?
-        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        personProcessor.deleteById(personId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @GetMapping

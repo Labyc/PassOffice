@@ -6,7 +6,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import passportOfficeTests.PassportOfficeBaseTest;
+import app.controllers.api.PassportOfficeBaseTest;
 
 import java.time.LocalDate;
 import java.util.stream.Stream;

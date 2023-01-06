@@ -5,7 +5,7 @@ info:
   version: 1.0.0
 
 servers:
-  - url: 'http://192.168.37.200:8090'
+  - url: 'http://localhost:8090'
     description: base server
 tags:
   - name: Passport
@@ -51,7 +51,7 @@ paths:
         '404':
           description: Not found
 
-  /person/byBirthDate:
+  /person:
     get:
       tags:
         - Search
@@ -59,42 +59,20 @@ paths:
       parameters:
         - name: startDate
           in: query
-          required: true
           schema:
             type: string
             format: date
         - name: endDate
           in: query
-          description: Will be set to today's date if not provided
           schema:
             type: string
             format: date
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PersonOut'
-        '404':
-          description: Not found
-
-  /person/byName:
-    get:
-      tags:
-        - Search
-      summary: Get persons by birth date range/ name
-      parameters:
         - name: personsName
           in: query
-          required: true
           schema:
             type: string
         - name: secondName
           in: query
-          required: false
           schema:
             type: string
       responses:
@@ -109,7 +87,6 @@ paths:
         '404':
           description: Not found
 
-  /person:
     post:
       tags:
         - Person
@@ -377,7 +354,7 @@ components:
           description: 6 digits for RF passport, required for all passport types
         givenDate:
           type: string
-          description: Date when the passport is given. Will be set to today's date if not provided
+          description: Date when the passport is given.
           format: date
         givenDepartment:
           type: string
@@ -413,7 +390,7 @@ components:
           description: 6 digits for RF passport, required for all passport types
         givenDate:
           type: string
-          description: Date when the passport is given. Will be set to today's date if not provided
+          description: Date when the passport is given.
           format: date
         givenDepartment:
           type: string
@@ -456,8 +433,6 @@ components:
               description: The number of the department code where the passport is given
               example: 120-450
               pattern: '\d{3}-\d{3}'
-            registrationData:
-              $ref: '#/components/schemas/RegistrationData'
           required:
             - series
 
@@ -480,8 +455,6 @@ components:
               description: The number of the department code where the passport is given
               example: 120-450
               pattern: '\d{3}-\d{3}'
-            registrationData:
-              $ref: '#/components/schemas/RegistrationData'
           required:
             - series
             - givenDepartmentCode
@@ -566,31 +539,6 @@ components:
           ForeignRFPassport: '#/components/schemas/ForeignRFPassportOut'
           NonRFPassport: '#/components/schemas/NonRFPassportOut'
 
-    RegistrationData:
-      type: object
-      description: The information about person's place of registration
-      properties:
-        internalRegistrationId:
-          type: string
-          description: Internal Registration Id
-        registrationAddress:
-          type: string
-          description: Address of registration
-        registrationStartDate:
-          type: string
-          description: Date of registration starts
-          format: date
-        registrationEndDate:
-          type: string
-          description: Date of registration ends
-          format: date
-        registrationDepartment:
-          type: string
-          description: Department of registration
-      required:
-        - registrationAddress
-        - registrationDate
-        - registrationDepartment
 
     PersonIn:
       type: object
