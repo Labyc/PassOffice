@@ -1,14 +1,9 @@
 package app.controllers.api.person;
 
-import app.PersonProcessor;
-import app.controllers.api.PassportOfficeBaseTest;
-import app.models.person.Person;
-import app.repositories.PersonRepositoryInMemoryImplementation;
-import com.fasterxml.jackson.databind.JsonNode;
+import app.BaseTest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.restassured.RestAssured;
 import io.restassured.response.ValidatableResponse;
-import lombok.AllArgsConstructor;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -17,15 +12,6 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.ImportResource;
-import org.springframework.test.context.BootstrapWith;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
-import org.springframework.test.context.junit.jupiter.web.SpringJUnitWebConfig;
-import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -34,21 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
-
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
-@SpringBootTest(useMainMethod = SpringBootTest.UseMainMethod.ALWAYS)
-@SpringJUnitWebConfig(resourcePath = "src/main/java/app")
-class PersonApiControllerTest extends PassportOfficeBaseTest {
-    @Autowired
-    private PersonProcessor personProcessor;
-    @Autowired
-    private WebApplicationContext webApplicationContext;
-
-    /*public PersonApiControllerTest(@Autowired PersonProcessor personProcessor) {
-        this.personProcessor = Objects.requireNonNull(personProcessor);
-    }*/
+class PersonApiControllerTest extends BaseTest {
 
     private static Stream<PersonInDTO> createPerson() {
         return Stream.of(
@@ -62,11 +35,9 @@ class PersonApiControllerTest extends PassportOfficeBaseTest {
     }
 
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "Create (* ^ ω ^)")
     @MethodSource
-    @DisplayName("(* ^ ω ^)")// ╯°□°）╯
     public void createPerson(PersonInDTO personInDTO) {
-        webApplicationContext.hashCode();
         ValidatableResponse response = RestAssured.with().body(personInDTO).post("/person").then();
         response.statusCode(201)
                 .body("name", Matchers.equalTo(personInDTO.name()))
@@ -76,14 +47,6 @@ class PersonApiControllerTest extends PassportOfficeBaseTest {
                 .body("dateOfBirth", Matchers.equalTo(personInDTO.dateOfBirth().toString()))
                 .body("dateOfDeath", Matchers.equalTo(personInDTO.dateOfDeath() != null ? personInDTO.dateOfDeath().toString() : null));
 
-        /*Person createdPerson = personProcessor.findById(response.extract().as(JsonNode.class).get("id").toString().replace("\"", ""));
-        Assertions.assertEquals(personInDTO.name(), createdPerson.name());
-        Assertions.assertEquals(personInDTO.surname(), createdPerson.surname());
-        Assertions.assertEquals(personInDTO.patronymic(), createdPerson.patronymic());
-        Assertions.assertEquals(personInDTO.placeOfBirth(), createdPerson.placeOfBirth());
-        Assertions.assertEquals(personInDTO.dateOfBirth(), createdPerson.dateOfBirth());
-        Assertions.assertEquals(personInDTO.dateOfDeath(), createdPerson.dateOfDeath());
-        assertNotNull(createdPerson.id());*/
     }
 
 
@@ -129,9 +92,8 @@ class PersonApiControllerTest extends PassportOfficeBaseTest {
         );
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "Put ╯°□°）╯ with '{2}'")
     @MethodSource("putPersonByIdDP")
-    @DisplayName("╯°□°）╯")
     public void putPersonById(PersonInDTO personPostRequest, PersonInDTO personPutRequest, String verification) {
         //Todo internally post person via service
 

@@ -1,4 +1,4 @@
-package app;
+package app.services;
 
 import app.exceptions.EntityNotFoundException;
 import app.models.person.Person;
@@ -11,7 +11,7 @@ import java.util.List;
 
 @Component
 @AllArgsConstructor
-public class PersonProcessor {
+public class PersonService {
     private final PersonRepository personRepository;
 
     public Person createEntity(Person person) {
@@ -49,6 +49,7 @@ public class PersonProcessor {
         return personRepository.deleteById(personId).orElseThrow(() -> new EntityNotFoundException(personId));
     }
 
+    //TODO question: на каком моменте делить на страницы и выдавать конкретную страницу? по ощущениям в БД эффективнее/ возможно ответ появится при использовании реальной БД
     public List<Person> findPerson(String personName, String surName, LocalDate birthStartDate, LocalDate birthEndDate) {
         return personRepository.findPerson(personName, surName, birthStartDate, birthEndDate);
     }

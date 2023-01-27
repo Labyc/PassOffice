@@ -1,6 +1,6 @@
 package app.controllers.api.person;
 
-import app.PersonProcessor;
+import app.services.PersonService;
 import app.exceptions.IncorrectQueryParametersException;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -24,16 +24,16 @@ import java.util.Optional;
 @Validated
 public class PersonApiController{
 
-    private final PersonProcessor personProcessor;
+    private final PersonService personService;
 
-    public PersonApiController(@Autowired PersonProcessor personProcessor) {
-        this.personProcessor = Objects.requireNonNull(personProcessor);
+    public PersonApiController(@Autowired PersonService personService) {
+        this.personService = Objects.requireNonNull(personService);
     }
 
     @PostMapping(consumes = "application/json")
     public ResponseEntity<PersonOutDTO> createPerson(@Valid @RequestBody PersonInDTO newPerson) {
         log.info("person: '{}'", newPerson.name());
-        PersonOutDTO createdPerson = PersonOutDTO.fromPerson(personProcessor.createEntity(newPerson.toPerson()));
+        PersonOutDTO createdPerson = PersonOutDTO.fromPerson(personService.createEntity(newPerson.toPerson()));
         log.info("Created new person:\n'{}'", createdPerson);
         return new ResponseEntity<>(createdPerson, HttpStatus.CREATED);
     }
@@ -41,7 +41,7 @@ public class PersonApiController{
     @GetMapping("/{personId}")
     public ResponseEntity<PersonOutDTO> getPersonById(@PathVariable("personId") String personId) {
         log.info("Get person by personId: '{}'", personId);
-        PersonOutDTO foundPerson = PersonOutDTO.fromPerson(personProcessor.findById(personId));
+        PersonOutDTO foundPerson = PersonOutDTO.fromPerson(personService.findById(personId));
         log.info("Found person:\n'{}'", foundPerson);
         return new ResponseEntity<>(foundPerson, HttpStatus.OK);
     }
@@ -50,7 +50,7 @@ public class PersonApiController{
     public ResponseEntity<PersonOutDTO> patchPersonById(@PathVariable("personId") String personId,
                                                         @Valid @RequestBody PersonPatchDTO editedPerson) {
         log.info("Try patch person with id: '{}'", personId);
-        PersonOutDTO patchedPerson = PersonOutDTO.fromPerson(personProcessor.updateEntity(personId, editedPerson.toPerson()));
+        PersonOutDTO patchedPerson = PersonOutDTO.fromPerson(personService.updateEntity(personId, editedPerson.toPerson()));
         log.info("Patched person:\n'{}'", patchedPerson);
         return new ResponseEntity<>(patchedPerson, HttpStatus.OK);
     }
@@ -59,7 +59,7 @@ public class PersonApiController{
     public ResponseEntity<PersonOutDTO> putPersonById(@PathVariable("personId") String personId,
                                                       @Valid @RequestBody PersonInDTO editedPerson) {
         log.info("Try put person with id: '{}'", personId);
-        PersonOutDTO puttedPerson = PersonOutDTO.fromPerson(personProcessor.replaceEntity(personId, editedPerson.toPerson()));
+        PersonOutDTO puttedPerson = PersonOutDTO.fromPerson(personService.replaceEntity(personId, editedPerson.toPerson()));
         log.info("Putted person:\n'{}'", puttedPerson);
         return new ResponseEntity<>(puttedPerson, HttpStatus.OK);
     }
@@ -67,7 +67,7 @@ public class PersonApiController{
     @DeleteMapping("/{personId}")
     public ResponseEntity<?> deletePersonById(@PathVariable("personId") String personId) {
         log.info("Try delete person with id: '{}'", personId);
-        personProcessor.deleteById(personId);
+        personService.deleteById(personId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -83,7 +83,7 @@ public class PersonApiController{
             throw new IncorrectQueryParametersException("Start date must be before the end date.");
         }
         log.info("Try find person with parameters: Name='{}', Surname='{}', birthStartDate='{}', birthEndDate='{}'", personName, surName, birthStartDate, birthEndDate);
-        List<PersonOutDTO> foundPersons = personProcessor
+        List<PersonOutDTO> foundPersons = personService
                 .findPerson(personName.orElse(null), surName.orElse(null), birthStartDate.orElse(null), birthEndDate.orElse(null))
                 .stream().map(PersonOutDTO::fromPerson).toList();
         log.info("Found person: '{}'", foundPersons);

@@ -1,14 +1,15 @@
 package app.models.passport;
 
 import lombok.AllArgsConstructor;
+import lombok.ToString;
 
 import java.io.Serializable;
 
 @AllArgsConstructor
 public enum PassportType implements Serializable {
-    RF_PASSPORT("RFPassport"),
-    FOREIGN_RF_PASSPORT("ForeignRFPassport"),
-    NON_RF_PASSPORT("NonRFPassport");
+    PASSPORT_RF("PassportRF"),
+    PASSPORT_RF_FOREIGN("PassportRFForeign"),
+    PASSPORT_NON_RF("PassportNonRF");
 
     private final String name;
     public static PassportType getTypeByName(String typeName){
@@ -18,4 +19,5 @@ public enum PassportType implements Serializable {
         }
         throw new EnumConstantNotPresentException(PassportType.class, typeName);
     }
+
 }

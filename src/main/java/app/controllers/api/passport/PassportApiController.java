@@ -1,39 +1,42 @@
 package app.controllers.api.passport;
 
 
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
+import app.controllers.api.passport.dtos.input.BasePassportPostDTO;
+import app.services.PassportService;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
-@Controller
-@RequestMapping("/passport")
+import java.util.Objects;
+
+@Slf4j
+@RestController
+@RequestMapping(value = "/passport", produces = "application/json")
+@Tag(name = "get/add/switch/delete passport")
+@Validated
 public class PassportApiController{
-/*
 
-    private final DataStorage dataStorage;
+    private final PassportService passportService;
 
-    public PassportApiController(DataStorage dataStorage) {
-        this.dataStorage = Objects.requireNonNull(dataStorage);
+
+    public PassportApiController(PassportService passportService) {
+        this.passportService = Objects.requireNonNull(passportService);
     }
 
 
     @Deprecated
     @GetMapping("/passports")
     public ResponseEntity<?> getPassports(){
-        return new ResponseEntity<>(dataStorage, HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity<?> postPassport(@RequestBody Map<String, String> passportMap){
-        if (PassportType.valueOf(passportMap.get("passportType")).equals(PassportType.RF_PASSPORT)){
-            //passportMap.toString();
-            PassportRFInDTO passportRF = (PassportRFInDTO) passportMap;
-            dataStorage.addPassport(passportRF);
-        }
-        /*if (dataStorage.findExistingPassport(passport.getPassportId())!=null){ //TODO some more validations
-            return new ResponseEntity<>("Passport with the same series and number is already exists" ,HttpStatus.NOT_ACCEPTABLE); //TODO normal exception (in Json format)???
-        }
-        dataStorage.addPassport(passport);*//*
-        return new ResponseEntity<>(HttpStatus.ACCEPTED);
-    }*/
+    public ResponseEntity<?> postPassport(@RequestBody BasePassportPostDTO passportPostDTO){
+
+        return new ResponseEntity<>(passportPostDTO, HttpStatus.CREATED);
+    }
 
 }

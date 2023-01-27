@@ -1,4 +1,4 @@
 package app.models.passport;
 
-public class BasePassport {
+public class PassportRF {
 }
