@@ -1,7 +1,6 @@
 package app.models.passport;
 
 import lombok.AllArgsConstructor;
-import lombok.ToString;
 
 import java.io.Serializable;
 
@@ -12,8 +11,9 @@ public enum PassportType implements Serializable {
     PASSPORT_NON_RF("PassportNonRF");
 
     private final String name;
-    public static PassportType getTypeByName(String typeName){
-        for (PassportType type: PassportType.values()){
+
+    public static PassportType getTypeByName(String typeName) {
+        for (PassportType type : PassportType.values()) {
             if (type.name.equals(typeName))
                 return type;
         }

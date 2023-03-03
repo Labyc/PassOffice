@@ -2,7 +2,6 @@ package app;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +21,8 @@ public class ErrorResponse {
         this.errors.add(new ResponseError(code, message));
     }
 
-    public record ResponseError(String code, String message) {}
+    public record ResponseError(String code, String message) {
+    }
 
     @Override
     public String toString() {

@@ -223,7 +223,8 @@ class PersonApiControllerTest extends BaseTest {
     public void findPerson(Map<String, String> requestQueryParameters) {
         //Todo internally post person via service
 
-        List<PersonOutDTO> foundPersonsList = RestAssured.with().queryParams(requestQueryParameters).get("/person").then().statusCode(200).extract().body().as(new ObjectMapper().getTypeFactory().constructCollectionType(List.class, PersonOutDTO.class));//.class);
+        ValidatableResponse response = RestAssured.with().queryParams(requestQueryParameters).get("/person").then().statusCode(200);
+        List<PersonOutDTO> foundPersonsList = response.extract().body().as(new ObjectMapper().getTypeFactory().constructCollectionType(List.class, PersonOutDTO.class));//.class);
         for (PersonOutDTO person : foundPersonsList) {
             if (requestQueryParameters.get("personName") != null)
                 Assertions.assertEquals(person.name(), requestQueryParameters.get("personName"));

@@ -39,14 +39,14 @@ public class ExceptionHandlerController {
     }
 
     @ExceptionHandler
-    ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException e){
+    ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
         ErrorResponse errorResponse = new ErrorResponse(e.getClass().getSimpleName(), e.getMessage());
         log.error("{}\n{}", errorResponse, e);
         return new ResponseEntity<>(errorResponse, HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     @ExceptionHandler
-    ResponseEntity<ErrorResponse> handleAllExceptions(Throwable e){
+    ResponseEntity<ErrorResponse> handleAllExceptions(Throwable e) {
         ErrorResponse errorResponse = new ErrorResponse(e.getClass().getSimpleName(), e.getMessage());
         log.error("{}\n{}", errorResponse, e);
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);

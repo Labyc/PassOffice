@@ -49,7 +49,7 @@ public class PersonService {
         return personRepository.deleteById(personId).orElseThrow(() -> new EntityNotFoundException(personId));
     }
 
-    //TODO question: на каком моменте делить на страницы и выдавать конкретную страницу? по ощущениям в БД эффективнее/ возможно ответ появится при использовании реальной БД
+    //TODO делить на страницы и выдавать конкретную страницу из БД
     public List<Person> findPerson(String personName, String surName, LocalDate birthStartDate, LocalDate birthEndDate) {
         return personRepository.findPerson(personName, surName, birthStartDate, birthEndDate);
     }

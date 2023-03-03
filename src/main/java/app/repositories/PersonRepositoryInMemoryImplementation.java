@@ -68,7 +68,7 @@ public class PersonRepositoryInMemoryImplementation implements PersonRepository 
     @Override
     public List<Person> findPerson(String personName, String surName, LocalDate birthStartDate, LocalDate birthEndDate) {
         return personsMap.values().stream()
-                .filter(person -> personName==null || person.name().equals(personName))
+                .filter(person -> personName == null || person.name().equals(personName))
                 .filter(person -> surName == null || person.surname().equals(surName))
                 .filter(person -> birthStartDate == null || person.dateOfBirth().isAfter(birthStartDate))
                 .filter(person -> birthEndDate == null || person.dateOfBirth().isBefore(birthEndDate))

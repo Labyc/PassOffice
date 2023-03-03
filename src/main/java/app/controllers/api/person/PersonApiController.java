@@ -1,7 +1,7 @@
 package app.controllers.api.person;
 
-import app.services.PersonService;
 import app.exceptions.IncorrectQueryParametersException;
+import app.services.PersonService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.PastOrPresent;
@@ -22,7 +22,7 @@ import java.util.Optional;
 @Slf4j
 @Tag(name = "get/add/edit/delete Person info")
 @Validated
-public class PersonApiController{
+public class PersonApiController {
 
     private final PersonService personService;
 
@@ -32,7 +32,7 @@ public class PersonApiController{
 
     @PostMapping(consumes = "application/json")
     public ResponseEntity<PersonOutDTO> createPerson(@Valid @RequestBody PersonInDTO newPerson) {
-        log.info("person: '{}'", newPerson.name());
+        log.info("Create new person:\n'{}'", newPerson);
         PersonOutDTO createdPerson = PersonOutDTO.fromPerson(personService.createEntity(newPerson.toPerson()));
         log.info("Created new person:\n'{}'", createdPerson);
         return new ResponseEntity<>(createdPerson, HttpStatus.CREATED);

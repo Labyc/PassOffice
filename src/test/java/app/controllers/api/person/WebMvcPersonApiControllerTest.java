@@ -1,7 +1,7 @@
 package app.controllers.api.person;
 
-import app.services.PersonService;
 import app.repositories.PersonRepository;
+import app.services.PersonService;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -47,7 +47,7 @@ public class WebMvcPersonApiControllerTest {
         String id = UUID.randomUUID().toString();
 
         this.mockMvc.perform(MockMvcRequestBuilders.post("/person")
-                .content(converter.getObjectMapper().writeValueAsString(personInDTO)).contentType(ContentType.JSON.toString()))
+                        .content(converter.getObjectMapper().writeValueAsString(personInDTO)).contentType(ContentType.JSON.toString()))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
                 .andExpect(MockMvcResultMatchers.content().string(
                         converter.getObjectMapper().writeValueAsString(PersonOutDTO.fromPerson(personInDTO.toPerson(id, 0)))));
@@ -98,7 +98,7 @@ public class WebMvcPersonApiControllerTest {
         String personId = personService.createEntity(personPostRequest.toPerson()).id();
 
         this.mockMvc.perform(MockMvcRequestBuilders.put("/person/{personId}", personId)
-                .content(converter.getObjectMapper().writeValueAsString(personPutRequest)).contentType(ContentType.JSON.toString()))
+                        .content(converter.getObjectMapper().writeValueAsString(personPutRequest)).contentType(ContentType.JSON.toString()))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().string(
                         converter.getObjectMapper().writeValueAsString(PersonOutDTO.fromPerson(personPutRequest.toPerson(personId, 0)))));

@@ -1,20 +1,17 @@
-package app.controllers.api.passport.dtos.input;
+package app.controllers.api.passport.dtos.post;
 
 
-import app.models.passport.PassportType;
+import app.models.passport.BasePassport;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PastOrPresent;
-import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
-import lombok.Data;
-import org.springframework.format.annotation.NumberFormat;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
 import java.time.LocalDate;
-import java.util.List;
 
-@Data
+@AllArgsConstructor
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.PROPERTY,
@@ -24,22 +21,19 @@ import java.util.List;
         @JsonSubTypes.Type(value = PassportNonRFPostDTO.class, name = "PASSPORT_NON_RF"),
         @JsonSubTypes.Type(value = PassportRFForeignPostDTO.class, name = "PASSPORT_RF_FOREIGN")
 })
-@AllArgsConstructor
+@Getter
+@EqualsAndHashCode
 public abstract class BasePassportPostDTO {
+    @NotNull
+    private final String personId;
+    @NotNull
+    private final String number;
+    @NotNull
+    private final LocalDate givenDate;
+    @NotNull
+    private final String givenDepartment;
 
-    @NotNull
-    PassportType passportType;
-    @NotNull
-    String personId;
-    @NotNull
-    @NumberFormat
-    String number;
-    @NotNull
-    @PastOrPresent
-    //@Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}")
-    LocalDate givenDate;
-    @NotNull
-    @Pattern(regexp = "\\p{Upper}\\w*")
-    String givenDepartment;
-    List<String> otherPassportIds;
+    public abstract BasePassport toPassport();
+
+    public abstract BasePassportPostDTO withPersonId(@NotNull String personId);
 }

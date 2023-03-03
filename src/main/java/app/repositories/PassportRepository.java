@@ -1,14 +1,12 @@
 package app.repositories;
 
 import app.exceptions.UpdatingObjectsIdsMismatchException;
-import app.models.person.Person;
+import app.models.passport.BasePassport;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
-import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
-public interface PersonRepository {
+public interface PassportRepository {
 
     /**
      * Saves a given entity. Use the returned instance for further operations as the save operation might have changed the
@@ -18,7 +16,7 @@ public interface PersonRepository {
      * @return the saved entity; will never be {@literal null}.
      * @throws IllegalArgumentException in case the given {@literal entity} is {@literal null}.
      */
-    Person add(Person entity);
+    BasePassport add(BasePassport entity);
 
     /**
      * Replaces old entity with a new one
@@ -30,7 +28,7 @@ public interface PersonRepository {
      * @throws UpdatingObjectsIdsMismatchException     if ids of entities are not equals to each other
      * @throws ObjectOptimisticLockingFailureException if somebody changed entity while we were preparing changes
      */
-    Person replace(String entityId, Person oldEntity, Person newEntity);
+    BasePassport replace(String entityId, BasePassport oldEntity, BasePassport newEntity);
 
     /**
      * Retrieves an entity by its id.
@@ -39,7 +37,7 @@ public interface PersonRepository {
      * @return the entity with the given id or {@literal Optional#empty()} if none found.
      * @throws IllegalArgumentException if {@literal id} is {@literal null}.
      */
-    Optional<Person> findById(String id);
+    Optional<BasePassport> findById(String id);
 
     /**
      * Returns whether an entity with the given id exists.
@@ -55,7 +53,7 @@ public interface PersonRepository {
      *
      * @return all entities
      */
-    Iterable<Person> findAll();
+    Iterable<BasePassport> findAll();
 
     /**
      * Returns the number of entities available.
@@ -70,15 +68,6 @@ public interface PersonRepository {
      * @param id must not be {@literal null}.
      * @throws IllegalArgumentException in case the given {@literal id} is {@literal null}
      */
-    Optional<Person> deleteById(String id);
-
-    /**
-     * @param personName
-     * @param surName
-     * @param birthStartDate
-     * @param birthEndDate
-     * @return
-     */
-    List<Person> findPerson(String personName, String surName, LocalDate birthStartDate, LocalDate birthEndDate);
+    Optional<BasePassport> deleteById(String id);
 
 }
